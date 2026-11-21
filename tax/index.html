@@ -190,7 +190,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <li><b>所得税</b>：課税所得に5〜45%の7段階の累進税率を適用し、復興特別所得税として×1.021。</li>
 <li><b>住民税</b>：（所得 − 基礎控除43万円 − 社会保険料 − 配偶者控除33万円 − 扶養控除（16〜18歳33万円、19〜22歳45万円））×10% − 調整控除（人的控除の差×5%）＋均等割5,000円＋森林環境税1,000円。合計所得が非課税限度額（単身は45万円）以下なら0円です。</li>
 <li><b>社会保険料（会社員）</b>：標準報酬月額を年収÷12（下限5.8万円・上限65万円）で近似し、健康保険9.85%・厚生年金18.3%・介護1.62%（40〜64歳）・子ども・子育て支援金0.23%を労使で折半。雇用保険は本人0.5%・会社0.85%、労災は会社0.25%、子ども・子育て拠出金0.36%は会社のみ負担。</li>
-<li><b>社会保険料（個人事業主・無職）</b>：国民年金は月17,920円（20〜59歳のみ）。国民健康保険料は入力値、空欄なら個人事業主は所得の約10%。無職の65〜74歳などは自治体差が大きいため空欄だと0円で、結果欄に注記が出ます。</li>
+<li><b>社会保険料（個人事業主・無職）</b>：国民年金は月17,920円（20〜59歳のみ）。国民健康保険料は入力値を優先し、空欄なら横浜市の令和8年度の料率（所得割＝（所得 − 43万円）×医療8.33%＋支援2.62%＋子ども0.34%、40〜64歳は介護2.84%を加算。均等割は医療40,870円・支援13,380円・子ども1,770円、介護16,200円。賦課限度額あり。所得に応じて均等割を7割・5割・2割軽減）で概算します。単身世帯（加入者1人）を想定しています。生活保護を受ける場合は、国民年金を法定免除、国保・後期高齢者医療を不要として扱います。</li>
 <li><b>後期高齢者医療（75歳以上）</b>：全国平均の料率で、均等割56,083円＋所得割10.17%×（所得 − 43万円）に、子ども分（均等割1,351円＋所得割0.25%）を加算します。所得が低い場合は均等割を7割・5割・2割軽減します。</li>
 <li><b>介護保険料（65歳以上・第1号）</b>：第9期の全国平均基準額（月6,225円）×所得段階の乗率（0.285〜2.4）。年金の天引きで、単身世帯を想定します。</li>
 <li><b>消費税</b>：食費等×8%＋その他×10%。そのうち22%（2.2/10）を地方消費税として扱います。</li>
@@ -212,6 +212,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <tr><td>健康保険料・介護保険料</td><td>協会けんぽの料率（概算。都道府県ごとに異なる）</td><td><a href="https://www.kyoukaikenpo.or.jp/g7/cat330/sb3130/r08/260216/" target="_blank" rel="noopener">協会けんぽ 令和8年度の保険料率</a></td></tr>
 <tr><td>厚生年金保険料・子ども・子育て拠出金</td><td>厚生年金18.3%（労使折半）、拠出金0.36%（事業主のみ）</td><td><a href="https://www.nenkin.go.jp/service/kounen/hokenryo/ryogaku/ryogakuhyo/20200825.html" target="_blank" rel="noopener">日本年金機構 厚生年金保険料額表</a></td></tr>
 <tr><td>子ども・子育て支援金</td><td>0.23%（労使折半）。2026年4月分から</td><td><a href="https://www.kyoukaikenpo.or.jp/shibu/gifu/assets/syahogifu202604.pdf" target="_blank" rel="noopener">協会けんぽ 令和8年4月からの保険料額表（PDF）</a><br><a href="https://www.mhlw.go.jp/hourei/doc/tsuchi/T260305S0021.pdf" target="_blank" rel="noopener">子ども・子育て支援金制度のリーフレット（PDF）</a></td></tr>
+<tr><td>国民健康保険料（75歳未満）</td><td>横浜市の令和8年度の料率（医療・支援・介護・子ども分の所得割と均等割、賦課限度額）</td><td><a href="https://www.city.yokohama.lg.jp/kurashi/koseki-zei-hoken/kokuho/hokenryo/r7hokennryouritu.html" target="_blank" rel="noopener">横浜市 令和8年度の国民健康保険料の料率</a><br><a href="https://www.pref.osaka.lg.jp/o100080/kokuho/iryouseido/hokenryouritsu/hokenryouritsu2.html" target="_blank" rel="noopener">比較：大阪府の標準保険料率</a></td></tr>
 <tr><td>後期高齢者医療保険料</td><td>令和8・9年度の全国平均：均等割56,083円、所得割10.17%、子ども分は均等割1,351円・所得割0.25%。軽減は7割・5割・2割</td><td><a href="https://www.mhlw.go.jp/stf/newpage_72371.html" target="_blank" rel="noopener">厚生労働省 後期高齢者医療の令和8・9年度の保険料率</a><br><a href="https://www.mhlw.go.jp/content/12401000/001765879.pdf" target="_blank" rel="noopener">均等割の軽減（PDF）</a></td></tr>
 <tr><td>介護保険料（第1号）</td><td>第9期の全国平均基準額 月6,225円、標準13段階の乗率（0.285〜2.4）</td><td><a href="https://www.mhlw.go.jp/stf/newpage_40211.html" target="_blank" rel="noopener">厚生労働省 第9期の第1号保険料</a><br><a href="https://www.mhlw.go.jp/content/12300000/001750951.pdf" target="_blank" rel="noopener">第1号保険料の在り方（PDF）</a></td></tr>
 <tr><td>雇用保険料率</td><td>一般の事業：本人0.5%、事業主0.85%</td><td><a href="https://www.mhlw.go.jp/content/001692566.pdf" target="_blank" rel="noopener">厚生労働省 令和8年度 雇用保険料率のご案内（PDF）</a></td></tr>
@@ -228,7 +229,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <li>所得税の基礎控除と給与所得控除は、令和8年度税制改正後の令和8年分（年末調整は令和8年12月）の水準で計算しています。給与収入が約69万〜220万円の人に適用される特例の計算式は簡略化しています。</li>
 <li>配偶者控除・配偶者特別控除は令和8年分の表で計算しますが、配偶者は給与収入だけと仮定しています。70歳以上の配偶者の控除額（48万円）、特定親族特別控除（19〜22歳の子に所得がある場合）は反映していません。扶養控除は年齢だけで判定しています。</li>
 <li>住民税は所得税と同じ所得金額を使い、基礎控除は43万円のままです。住民税側の令和8年度改正は確認していません。調整控除は令和8年分の所得税の基礎控除の引上げを反映していません。特定親族特別控除、住宅ローン控除、医療費控除などは入っていません。</li>
-<li>後期高齢者医療と介護保険料（第1号）は、全国平均の料率・基準額による概算で、単身世帯を想定しています。自治体ごとの料率、賦課限度額、令和8・9年度に限る軽減の上乗せは反映していません。65〜74歳の国民健康保険料は自治体差が大きいため、入力がなければ含めていません。</li>
+<li>国民健康保険料は横浜市の令和8年度の料率を代表例として使った概算で、単身世帯（加入者1人）を想定しています。自治体ごとの料率差が大きく（所得割の合計は5〜12%台など）、平等割や世帯の人数は反映していません。実際の金額は入力欄に年額を入れてください。後期高齢者医療と介護保険料（第1号）も全国平均の料率・基準額による概算で、賦課限度額や令和8・9年度に限る軽減の上乗せは反映していません。</li>
 <li>生活扶助は、世帯人員ごとの逓減率、冬季加算、母子加算などを反映していません。</li>
 <li>健康保険の標準報酬月額の上限（65万円）は厚生年金の上限で近似しています。健康保険は実際には上限がもっと高く、健保組合は料率が異なります。</li>
 <li>支援金・拠出金・保険料は、2026年度の料率を12か月分かけた年額です（支援金は2026年4月開始）。</li>
@@ -414,6 +415,28 @@ function calc(){
   incomeAmount+=pensionMisc;
  }
 
+ let childBenefit=0;
+ const sorted=[...children].sort((a,b)=>a-b);
+ sorted.forEach((childAge,idx)=>{
+  const order=idx+1;
+  if(childAge<3)childBenefit+=(order>=3?30000:15000);
+  else childBenefit+=(order>=3?30000:10000);
+ });
+ childBenefit*=12;
+
+ const first1={"0-2":44580,"3-5":44580,"6-11":46460,"12-17":49270,"18-64":46930,"65-69":46460,"70-74":46460,"75+":39890};
+ const first3={"0-2":37000,"3-5":37000,"6-11":38560,"12-17":40900,"18-64":38950,"65-69":38560,"70-74":38560,"75+":33110};
+ const second={1:27790,2:38060,3:44730};
+ const ageBand=a=>a<=2?"0-2":a<=5?"3-5":a<=11?"6-11":a<=17?"12-17":a<=64?"18-64":a<=69?"65-69":a<=74?"70-74":"75+";
+ const household=[age,...children];
+ let lifeAssist=0,firstSum=0,addSum=0;
+ household.forEach(a=>{const band=ageBand(a);firstSum+=(area==="1-1"?first1[band]:first3[band]);addSum+=2500;});
+ const secondVal=second[Math.min(3,household.length)];
+ lifeAssist=firstSum+addSum+secondVal;
+ const annualLifeAssist=lifeAssist*12;
+ const welfareEligible=age>=18&&(income+pensionIncome+childBenefit)<annualLifeAssist&&assets<1000000;
+ const welfareAmount=welfareEligible?Math.max(0,annualLifeAssist-(income+pensionIncome+childBenefit)):0;
+ const onWelfare=welfareEligible; // 生活保護を受ける場合は、国民年金が法定免除、国保・後期高齢者医療の保険料が不要（医療扶助）
  // 後期高齢者医療（75歳以上）：令和8・9年度の全国平均の料率（医療分＋子ども分）。単身世帯を想定
  const calcKouki=()=>{
   const judge=Math.max(0,incomeAmount-(pensionIncome>0?150000:0)); // 軽減判定の所得（年金所得から15万円を控除）
@@ -433,7 +456,20 @@ function calc(){
   }
   return{amount:6225*12*rate,rate};
  };
- const kouki=(age>=75&&employment!=="company")?calcKouki():null;
+ // 国民健康保険料（75歳未満）：横浜市の令和8年度の料率による概算。単身世帯（加入者1人）を想定
+ const calcKokuho=()=>{
+  const base=Math.max(0,incomeAmount-430000);
+  const judge=Math.max(0,incomeAmount-((pensionIncome>0&&age>=65)?150000:0));
+  const cut=judge<=430000?.7:judge<=740000?.5:judge<=1000000?.2:0;
+  const part=(rate,flat,cap)=>Math.min(cap,base*rate+flat*(1-cut));
+  const medical=part(.0833,40870,670000),support=part(.0262,13380,260000);
+  const care=(age>=40&&age<65)?part(.0284,16200,170000):0,child=part(.0034,1770,30000);
+  return{medical,support,care,child,total:medical+support+care+child,cut};
+ };
+ const kouki=(age>=75&&employment!=="company"&&!onWelfare)?calcKouki():null;
+ const kokuho=(age<75&&employment!=="company"&&!onWelfare)?calcKokuho():null;
+ const medEst=kouki||kokuho; // 保険料を概算する医療保険（入力があれば入力を優先）
+ const medLabel=kouki?"後期高齢者医療保険料（全国平均の料率で概算）":"国民健康保険料（横浜市の令和8年度の料率で概算。自治体で大きく異なります）";
  let insurance=0,employerBurden=0,insuranceTotal=0,insuranceDetail=[];
  let premUse={pension:0,health:0,care:0,employment:0,support:0,contrib:0};
  if(employment==="company"){
@@ -454,24 +490,28 @@ function calc(){
   ];
   if(care)insuranceDetail.push(`介護保険：本人 ${fmt(care*12)}`);
  }else if(employment==="self"){
-  const pension=(age>=60||age<20)?0:17920*12;
-  const health=nHealthInput!==null?nHealthInput:(kouki?kouki.total:Math.max(0,income*.10));
+  const pension=(onWelfare||age>=60||age<20)?0:17920*12;
+  const health=nHealthInput!==null?nHealthInput:(medEst?medEst.total:0);
   insurance=pension+health;insuranceTotal=insurance;premUse={pension,health,care:0,employment:0,support:0,contrib:0};
   insuranceDetail=[];
   if(pension)insuranceDetail.push(`国民年金 ${fmt(pension)}`);
-  if(health)insuranceDetail.push(kouki&&nHealthInput===null?`後期高齢者医療保険料 ${fmt(health)}（全国平均の料率で概算）`:`国民健康保険 ${fmt(health)}`);
+  if(health)insuranceDetail.push(nHealthInput===null?`${medLabel} ${fmt(health)}`:`国民健康保険 ${fmt(health)}`);
+  if(onWelfare&&nHealthInput===null)insuranceDetail.push("生活保護を受ける場合は、医療保険の保険料は不要で、国民年金保険料は法定免除となります（試算から除外）。");
  }else{
-  const pension=age<20||age>=60?0:17920*12;
-  const health=nHealthInput!==null?nHealthInput:(kouki?kouki.total:0);
+  const pension=(onWelfare||age<20||age>=60)?0:17920*12;
+  const health=nHealthInput!==null?nHealthInput:(medEst?medEst.total:0);
   insurance=pension+health;insuranceTotal=insurance;premUse={pension,health,care:0,employment:0,support:0,contrib:0};
   insuranceDetail=[];
   if(pension)insuranceDetail.push(`国民年金 ${fmt(pension)}（免除申請で0円になる可能性あり）`);
-  if(health)insuranceDetail.push(kouki&&nHealthInput===null?`後期高齢者医療保険料 ${fmt(health)}（全国平均の料率で概算）`:`国民健康保険 ${fmt(health)}`);
-  if(!kouki&&nHealthInput===null)insuranceDetail.push("国民健康保険料は自治体差が大きいため試算に含めていません。入力欄に年額を入れてください。");
+  if(health)insuranceDetail.push(nHealthInput===null?`${medLabel} ${fmt(health)}`:`国民健康保険 ${fmt(health)}`);
+  if(onWelfare&&nHealthInput===null)insuranceDetail.push("生活保護を受ける場合は、医療保険の保険料は不要で、国民年金保険料は法定免除となります（試算から除外）。");
  }
 
  // 後期高齢者医療の内訳（使い道は医療給付と子ども・子育て支援）
- if(kouki&&nHealthInput===null&&employment!=="company"){premUse.health=kouki.medical;premUse.support=kouki.child;}
+ if(nHealthInput===null&&employment!=="company"&&medEst){
+  if(kouki){premUse.health=kouki.medical;premUse.support=kouki.child;}
+  else{premUse.health=kokuho.medical+kokuho.support;premUse.support=kokuho.child;premUse.care+=kokuho.care;}
+ }
  // 65歳以上は介護保険料（第1号）を負担
  if(age>=65){
   const c1=calcCare1();
@@ -543,27 +583,6 @@ function calc(){
  const indirectTax=consumptionTax+gasolineTax+carTax+tobaccoTax;
  const totalBurden=burden+indirectTax;
 
- let childBenefit=0;
- const sorted=[...children].sort((a,b)=>a-b);
- sorted.forEach((childAge,idx)=>{
-  const order=idx+1;
-  if(childAge<3)childBenefit+=(order>=3?30000:15000);
-  else childBenefit+=(order>=3?30000:10000);
- });
- childBenefit*=12;
-
- const first1={"0-2":44580,"3-5":44580,"6-11":46460,"12-17":49270,"18-64":46930,"65-69":46460,"70-74":46460,"75+":39890};
- const first3={"0-2":37000,"3-5":37000,"6-11":38560,"12-17":40900,"18-64":38950,"65-69":38560,"70-74":38560,"75+":33110};
- const second={1:27790,2:38060,3:44730};
- const ageBand=a=>a<=2?"0-2":a<=5?"3-5":a<=11?"6-11":a<=17?"12-17":a<=64?"18-64":a<=69?"65-69":a<=74?"70-74":"75+";
- const household=[age,...children];
- let lifeAssist=0,firstSum=0,addSum=0;
- household.forEach(a=>{const band=ageBand(a);firstSum+=(area==="1-1"?first1[band]:first3[band]);addSum+=2500;});
- const secondVal=second[Math.min(3,household.length)];
- lifeAssist=firstSum+addSum+secondVal;
- const annualLifeAssist=lifeAssist*12;
- const welfareEligible=age>=18&&(income+pensionIncome+childBenefit)<annualLifeAssist&&assets<1000000;
- const welfareAmount=welfareEligible?Math.max(0,annualLifeAssist-(income+pensionIncome+childBenefit)):0;
  const benefits=pensionIncome+childBenefit+welfareAmount;
  const grossBurden=totalBurden+employerBurden; // 本人負担＋雇用主負担
  const net=benefits-grossBurden; // 収入は含めず、負担と給付のみ
