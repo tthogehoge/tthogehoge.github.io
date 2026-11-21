@@ -625,30 +625,31 @@ function calc(){
    children:insChildren
   });
  }
+ const pct=v=>grossBurden>0?(v/grossBurden*100).toFixed(1)+"%":"0.0%";
  const rows=el("rows");rows.innerHTML="";
  budget.forEach((b,i)=>{
   const u=userTotals[i],rowId="cat-"+i;
-  rows.insertAdjacentHTML("beforeend",`<tr class="cat" data-target="${rowId}"><td><span class="arrow">▶</span>${b.name}</td><td>${(u/grossBurden*100).toFixed(1)}%</td><td><b>${fmt(u)}</b></td><td>${fmt(u/12)}</td></tr>`);
+  rows.insertAdjacentHTML("beforeend",`<tr class="cat" data-target="${rowId}"><td><span class="arrow">▶</span>${b.name}</td><td>${pct(u)}</td><td><b>${fmt(u)}</b></td><td>${fmt(u/12)}</td></tr>`);
   normalizeChildren(b.children,b.total);
   b.children.forEach((c,j)=>{
    const childId=`${rowId}-${j}`,amount=u*(c.amount/b.total);
-   rows.insertAdjacentHTML("beforeend",`<tr class="child hidden ${c.children?"cat":""}" data-parent="${rowId}" ${c.children?`data-target="${childId}"`:""}><td>${c.children?`<span class="arrow">▶</span>`:""}${c.name}${c.note?`<div class="small">${c.note}</div>`:""}</td><td>${(c.amount/b.total*100).toFixed(1)}%</td><td>${fmt(amount)}</td><td>${fmt(amount/12)}</td></tr>`);
+   rows.insertAdjacentHTML("beforeend",`<tr class="child hidden ${c.children?"cat":""}" data-parent="${rowId}" ${c.children?`data-target="${childId}"`:""}><td>${c.children?`<span class="arrow">▶</span>`:""}${c.name}${c.note?`<div class="small">${c.note}</div>`:""}</td><td>${pct(amount)}</td><td>${fmt(amount)}</td><td>${fmt(amount/12)}</td></tr>`);
    if(c.children){
     normalizeChildren(c.children,c.amount);
     c.children.forEach(g=>{const gAmount=u*(g.amount/b.total);
-     rows.insertAdjacentHTML("beforeend",`<tr class="grand hidden" data-parent="${childId}"><td>${g.name}</td><td>${(g.amount/c.amount*100).toFixed(1)}%</td><td>${fmt(gAmount)}</td><td>${fmt(gAmount/12)}</td></tr>`);});
+     rows.insertAdjacentHTML("beforeend",`<tr class="grand hidden" data-parent="${childId}"><td>${g.name}</td><td>${pct(gAmount)}</td><td>${fmt(gAmount)}</td><td>${fmt(gAmount/12)}</td></tr>`);});
    }
   });
  });
  extraItems.forEach((x,idx)=>{
   if(x.children&&x.children.length){
    const rowId=x.id||("cat-extra-"+idx);
-   rows.insertAdjacentHTML("beforeend",`<tr class="cat" data-target="${rowId}"><td><span class="arrow">▶</span>${x.name}</td><td>${(x.v/grossBurden*100).toFixed(1)}%</td><td><b>${fmt(x.v)}</b></td><td>${fmt(x.v/12)}</td></tr>`);
+   rows.insertAdjacentHTML("beforeend",`<tr class="cat" data-target="${rowId}"><td><span class="arrow">▶</span>${x.name}</td><td>${pct(x.v)}</td><td><b>${fmt(x.v)}</b></td><td>${fmt(x.v/12)}</td></tr>`);
    x.children.forEach(c=>{
-    rows.insertAdjacentHTML("beforeend",`<tr class="child hidden" data-parent="${rowId}"><td>${c.name}</td><td>${(c.v/x.v*100).toFixed(1)}%</td><td>${fmt(c.v)}</td><td>${fmt(c.v/12)}</td></tr>`);
+    rows.insertAdjacentHTML("beforeend",`<tr class="child hidden" data-parent="${rowId}"><td>${c.name}</td><td>${pct(c.v)}</td><td>${fmt(c.v)}</td><td>${fmt(c.v/12)}</td></tr>`);
    });
   }else{
-   rows.insertAdjacentHTML("beforeend",`<tr><td>${x.name}</td><td>${(x.v/grossBurden*100).toFixed(1)}%</td><td><b>${fmt(x.v)}</b></td><td>${fmt(x.v/12)}</td></tr>`);
+   rows.insertAdjacentHTML("beforeend",`<tr><td>${x.name}</td><td>${pct(x.v)}</td><td><b>${fmt(x.v)}</b></td><td>${fmt(x.v/12)}</td></tr>`);
   }
  });
  const sgn=n=>(n>=0?"+":"-")+fmt(Math.abs(n));
