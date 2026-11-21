@@ -81,7 +81,8 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <div><label>住む地域の級地</label><select id="areaClass">
 <option value="1-1">1級地-1（東京23区等・都市部）</option>
 <option value="3-2">3級地-2（地方・生活費水準が低い地域）</option></select></div>
-<div><label>配偶者の有無</label><select id="spouse"><option value="none">いない</option><option value="dependent">いる（年収103万円超210万円未満）</option><option value="income">いる（年収210万円以上）</option></select></div>
+<div><label>配偶者の有無</label><select id="spouse"><option value="none">いない</option><option value="dependent">いる（配偶者控除・配偶者特別控除の対象。年収を右に入力）</option><option value="income">いる（配偶者の年収が207万円超で控除なし）</option></select></div>
+<div><label>配偶者の年収（円・給与のみ。上で「控除の対象」を選んだとき）</label><input id="spouseIncome" type="number" min="0" step="10000" value="1000000"></div>
 <div><label>子どもの人数</label><input id="childrenCount" type="number" min="0" max="10" value="0"></div>
 <div><label>子どもの年齢（カンマ区切り）</label><input id="childrenAges" type="text" placeholder="例: 2,5,8" value=""></div>
 <div><label>家賃（月額）</label><input id="rent" type="number" min="0" step="1000" value="0"></div>
@@ -185,7 +186,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <ul>
 <li><b>給与所得</b>：年収 − 給与所得控除（令和8・9年分は、220万円以下は74万円、以降は年収に応じて最大195万円）。個人事業主は 年収 ×（1 − 必要経費率）。</li>
 <li><b>年金の所得</b>：年金受給額 − 公的年金等控除（65歳以上は最低110万円、65歳未満は最低60万円）。給付としては年金受給額をそのまま計上します。</li>
-<li><b>所得控除</b>：基礎控除（令和8年分。合計所得489万円以下は104万円、655万円以下は67万円、2,350万円以下は62万円、以降は段階的に減少）＋社会保険料控除（本人負担分）＋配偶者控除38万円＋扶養控除（16〜18歳38万円、19〜22歳63万円）。</li>
+<li><b>所得控除</b>：基礎控除（令和8年分。合計所得489万円以下は104万円、655万円以下は67万円、2,350万円以下は62万円、以降は段階的に減少）＋社会保険料控除（本人負担分）＋配偶者控除・配偶者特別控除（令和8年分の表。配偶者の年収から合計所得を求め、本人の合計所得が900万円・950万円・1,000万円を超えると減額。最大38万円）＋扶養控除（16〜18歳38万円、19〜22歳63万円。子どもの合計所得は62万円以下と仮定）。</li>
 <li><b>所得税</b>：課税所得に5〜45%の7段階の累進税率を適用し、復興特別所得税として×1.021。</li>
 <li><b>住民税</b>：（所得 − 基礎控除43万円 − 社会保険料 − 配偶者控除33万円 − 扶養控除（16〜18歳33万円、19〜22歳45万円））×10% − 調整控除（人的控除の差×5%）＋均等割5,000円＋森林環境税1,000円。合計所得が非課税限度額（単身は45万円）以下なら0円です。</li>
 <li><b>社会保険料（会社員）</b>：標準報酬月額を年収÷12（下限5.8万円・上限65万円）で近似し、健康保険9.85%・厚生年金18.3%・介護1.62%（40〜64歳）・子ども・子育て支援金0.23%を労使で折半。雇用保険は本人0.5%・会社0.85%、労災は会社0.25%、子ども・子育て拠出金0.36%は会社のみ負担。</li>
@@ -206,7 +207,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <tbody>
 <tr><td>一般会計予算の費目</td><td>令和8年度の主要経費別の構成比</td><td><a href="https://www.mof.go.jp/policy/budget/budger_workflow/budget/fy2026/seifuan2026/index.html" target="_blank" rel="noopener">財務省 令和8年度予算</a><br><a href="https://www.mof.go.jp/policy/budget/budger_workflow/budget/fy2026/tousyoyosetsu2.pdf" target="_blank" rel="noopener">令和8年度予算の説明（総説・主要経費別の付表・PDF）</a><br><a href="https://www.mof.go.jp/about_mof/mof_budget/budget/fy2026/20251226.html" target="_blank" rel="noopener">財務省 令和8年度国債費の内訳</a><br><a href="https://www.mod.go.jp/j/press/wp/wp2026/html/n220402000.html" target="_blank" rel="noopener">防衛省 防衛関係費の内訳</a></td></tr>
 <tr><td>所得税の税率</td><td>5〜45%の7段階（195万円・330万円・695万円・900万円・1,800万円・4,000万円）</td><td><a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/2260.htm" target="_blank" rel="noopener">国税庁 No.2260 所得税の税率</a><br><a href="https://www.nta.go.jp/publication/pamph/gensen/nencho2026/pdf/115.pdf" target="_blank" rel="noopener">令和8年分の速算表（PDF）</a></td></tr>
-<tr><td>基礎控除・給与所得控除</td><td>令和8年度税制改正後（令和8・9年分）：基礎控除は合計所得に応じて104万円〜0円、給与所得控除の最低額は74万円</td><td><a href="https://www.nta.go.jp/publication/pamph/gensen/nencho2026/pdf/102.pdf" target="_blank" rel="noopener">国税庁 令和8年分 年末調整のしかた（改正点・PDF）</a></td></tr>
+<tr><td>基礎控除・給与所得控除</td><td>令和8年度税制改正後（令和8・9年分）：基礎控除は合計所得に応じて104万円〜0円、給与所得控除の最低額は74万円</td><td><a href="https://www.nta.go.jp/publication/pamph/gensen/nencho2026/pdf/102.pdf" target="_blank" rel="noopener">国税庁 令和8年分 年末調整のしかた（改正点・PDF）</a><br><a href="https://www.nta.go.jp/publication/pamph/gensen/2026kaisei.pdf" target="_blank" rel="noopener">国税庁 令和8年度税制改正による源泉所得税関係の改正のあらまし（配偶者特別控除の表・PDF）</a></td></tr>
 <tr><td>公的年金等控除</td><td>65歳以上は最低110万円、65歳未満は最低60万円</td><td><a href="https://www.nta.go.jp/publication/pamph/koho/kurashi/html/03_1.htm" target="_blank" rel="noopener">国税庁 年金収入の所得計算</a></td></tr>
 <tr><td>健康保険料・介護保険料</td><td>協会けんぽの料率（概算。都道府県ごとに異なる）</td><td><a href="https://www.kyoukaikenpo.or.jp/g7/cat330/sb3130/r08/260216/" target="_blank" rel="noopener">協会けんぽ 令和8年度の保険料率</a></td></tr>
 <tr><td>厚生年金保険料・子ども・子育て拠出金</td><td>厚生年金18.3%（労使折半）、拠出金0.36%（事業主のみ）</td><td><a href="https://www.nenkin.go.jp/service/kounen/hokenryo/ryogaku/ryogakuhyo/20200825.html" target="_blank" rel="noopener">日本年金機構 厚生年金保険料額表</a></td></tr>
@@ -225,7 +226,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <h3>注意（簡略化・未反映の点）</h3>
 <ul>
 <li>所得税の基礎控除と給与所得控除は、令和8年度税制改正後の令和8年分（年末調整は令和8年12月）の水準で計算しています。給与収入が約69万〜220万円の人に適用される特例の計算式は簡略化しています。</li>
-<li>配偶者控除・扶養控除は、令和8年分で変わった所得要件に対応しておらず、配偶者控除は一律38万円、扶養控除は年齢だけで判定しています。</li>
+<li>配偶者控除・配偶者特別控除は令和8年分の表で計算しますが、配偶者は給与収入だけと仮定しています。70歳以上の配偶者の控除額（48万円）、特定親族特別控除（19〜22歳の子に所得がある場合）は反映していません。扶養控除は年齢だけで判定しています。</li>
 <li>住民税は所得税と同じ所得金額を使い、基礎控除は43万円のままです。住民税側の令和8年度改正は確認していません。調整控除は令和8年分の所得税の基礎控除の引上げを反映していません。特定親族特別控除、住宅ローン控除、医療費控除などは入っていません。</li>
 <li>後期高齢者医療と介護保険料（第1号）は、全国平均の料率・基準額による概算で、単身世帯を想定しています。自治体ごとの料率、賦課限度額、令和8・9年度に限る軽減の上乗せは反映していません。65〜74歳の国民健康保険料は自治体差が大きいため、入力がなければ含めていません。</li>
 <li>生活扶助は、世帯人員ごとの逓減率、冬季加算、母子加算などを反映していません。</li>
@@ -290,7 +291,7 @@ const presets={
 function applyPreset(){
  const p=presets[el("preset").value];
  el("age").value=p.age;el("income").value=p.income;el("pensionIncome").value=p.pensionIncome||0;el("employment").value=p.employment;
- el("expenseRate").value=p.expenseRate;el("areaClass").value=p.areaClass;el("spouse").value=p.spouse;
+ el("expenseRate").value=p.expenseRate;el("areaClass").value=p.areaClass;el("spouse").value=p.spouse;el("spouseIncome").value=p.spouseIncome||1000000;
  el("childrenCount").value=p.childrenCount;el("childrenAges").value=p.childrenAges;
  el("rent").value=p.rent;el("assets").value=p.assets;el("nationalHealth").value=p.nationalHealth;el("disability").value=p.disability;
  el("foodSpend").value=p.foodSpend;el("otherSpend").value=p.otherSpend;el("gasLiters").value=p.gasLiters;
@@ -480,8 +481,18 @@ function calc(){
 
  // 令和8年分の基礎控除（合計所得金額に応じて）
  const basicDeduction=incomeAmount<=4890000?1040000:incomeAmount<=6550000?670000:incomeAmount<=23500000?620000:incomeAmount<=24000000?480000:incomeAmount<=24500000?320000:incomeAmount<=25000000?160000:0;
- let deductions=basicDeduction+insurance;
- if(spouse==="dependent")deductions+=380000;
+ // 配偶者控除・配偶者特別控除（令和8年分）。配偶者は給与収入のみと仮定し、配偶者の合計所得金額で控除額を決める
+ const salaryDeduction=y=>(y<=2200000?740000:y<=3600000?y*.3+80000:y<=6600000?y*.2+440000:y<=8500000?y*.1+1100000:1950000);
+ const spouseIncomeIn=Math.max(0,+el("spouseIncome").value||0);
+ let spouseDedIT=0,spouseDedRes=0,spouseCounts=false;
+ if(spouse==="dependent"){
+  const ds=Math.max(0,spouseIncomeIn-salaryDeduction(spouseIncomeIn)); // 配偶者の合計所得金額
+  const tier=incomeAmount<=9000000?0:incomeAmount<=9500000?1:incomeAmount<=10000000?2:-1; // 本人の合計所得金額による区分
+  const table=ds<=950000?[380000,260000,130000]:ds<=1000000?[360000,240000,120000]:ds<=1050000?[310000,210000,110000]:ds<=1100000?[260000,180000,90000]:ds<=1150000?[210000,140000,70000]:ds<=1200000?[160000,110000,60000]:ds<=1250000?[110000,80000,40000]:ds<=1300000?[60000,40000,20000]:ds<=1330000?[30000,20000,10000]:[0,0,0];
+  if(tier>=0){spouseDedIT=table[tier];spouseDedRes=Math.min(spouseDedIT,[330000,220000,110000][tier]);}
+  spouseCounts=ds<=580000; // 非課税限度額の計算で扶養親族に数える配偶者（同一生計配偶者）
+ }
+ let deductions=basicDeduction+insurance+spouseDedIT;
  let dependentDeduction=0;
  children.forEach(a=>{if(a>=16&&a<=18)dependentDeduction+=380000;if(a>=19&&a<=22)dependentDeduction+=630000;});
  deductions+=dependentDeduction;
@@ -494,12 +505,12 @@ function calc(){
   incomeTax*=1.021;
  }
  // 住民税：住民税の控除額（基礎43万円、配偶者33万円、扶養16〜18歳33万円・19〜22歳45万円）で課税標準を計算
- let resDependent=0,resDiff=50000+(spouse==="dependent"?50000:0); // 調整控除の対象となる人的控除額の差（基礎5万円、配偶者5万円）
+ let resDependent=0,resDiff=50000+Math.max(0,spouseDedIT-spouseDedRes); // 調整控除の対象となる人的控除額の差（基礎5万円、配偶者5万円）
  children.forEach(a=>{if(a>=16&&a<=18){resDependent+=330000;resDiff+=50000;}if(a>=19&&a<=22){resDependent+=450000;resDiff+=180000;}});
- const resTaxable=Math.floor(Math.max(0,incomeAmount-430000-insurance-(spouse==="dependent"?330000:0)-resDependent)/1000)*1000;
+ const resTaxable=Math.floor(Math.max(0,incomeAmount-430000-insurance-spouseDedRes-resDependent)/1000)*1000;
  const adjustment=resTaxable<=2000000?Math.min(resDiff,resTaxable)*.05:Math.max(2500,(resDiff-(resTaxable-2000000))*.05);
  // 均等割（5,000円）＋森林環境税（1,000円）。合計所得が非課税限度額以下なら課されない（1級地）
- const resDependents=(spouse==="dependent"?1:0)+childCount;
+ const resDependents=(spouseCounts?1:0)+childCount;
  const resExemptLimit=350000*(1+resDependents)+100000+(resDependents>0?210000:0);
  const residentTax=incomeAmount<=resExemptLimit?0:Math.max(0,resTaxable*.10-adjustment)+6000;
  const taxBurden=incomeTax+residentTax;
