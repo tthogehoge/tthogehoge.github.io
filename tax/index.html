@@ -33,6 +33,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:8px;border-bottom:1px solid var(--line);text-align:right}
 th:first-child,td:first-child{text-align:left}
 tfoot td{font-weight:700;border-top:1px solid #334155;border-bottom:0;background:#0b1220}
+tr.total td{font-weight:700;font-size:16px;border-top:2px solid #334155}
 tfoot tr.first td{border-top:2px solid #334155}
 tfoot tr.sub td{font-weight:400;color:#cbd5e1;font-size:13px;border-top:1px solid var(--line)}
 tfoot tr.sub td:first-child{padding-left:28px}
@@ -123,34 +124,53 @@ tfoot tr.sub td:first-child{padding-left:28px}
 </div>
 
 <div class="card">
-<div class="chart-head"><div class="chart-title">負担の内訳（何にいくら払っているか）</div></div>
+<h2>① 負担の内訳（何にいくら払っているか）</h2>
 <div class="chartbox"><canvas id="burdenChart"></canvas></div>
 <div class="total-line"><span>負担合計（雇用主負担込み）</span><b id="burdenChartTotal">-</b></div>
+<table>
+<thead><tr><th>項目</th><th>構成比</th><th>年額</th><th>月額換算</th></tr></thead>
+<tbody id="burdenRows"></tbody>
+<tfoot id="burdenFoot"></tfoot>
+</table>
 <p class="small">所得税・住民税・社会保険料（本人／雇用主）・消費税・ガソリン税・自動車税・たばこ税の内訳です。0円の項目は表示しません。</p>
 </div>
 
 <div class="card">
+<h2>② 給付の内訳（何をいくら受け取るか）</h2>
+<div class="chartbox"><canvas id="benefitChart"></canvas></div>
+<div class="total-line"><span>給付合計</span><b id="benefitChartTotal">-</b></div>
+<table>
+<thead><tr><th>項目</th><th>構成比</th><th>年額</th><th>月額換算</th></tr></thead>
+<tbody id="benefitRows"></tbody>
+<tfoot id="benefitFoot"></tfoot>
+</table>
+<p class="small" id="benefitChartNote"></p>
+</div>
+
+<div class="card">
 <div class="chart-head">
-<div class="chart-title" id="chartTitle">国の予算全体の使われ方</div>
+<h2 id="chartTitle" style="margin:0">③ 費目の内訳（国の予算全体の使われ方）</h2>
 <button class="back" id="backBtn">← 費目別に戻る</button>
 </div>
 <div class="chartbox"><canvas id="chart"></canvas></div>
 <div class="total-line"><span>内訳合計（税・保険料／雇用主負担込み）</span><b id="chartTotal">-</b></div>
-<div id="balanceBox">
-<div class="total-line sub"><span>給付分（年金・児童手当・生活扶助）</span><b id="chartBenefit">-</b></div>
-<div class="total-line sub"><span>差し引き（給付－負担）</span><b id="chartNet">-</b></div>
-</div>
 <p class="small" id="chartHint">円グラフの区切りをクリックすると、その費目の内訳に進めます。</p>
-</div>
-
-<div class="card">
 <h2>費目別の内訳 <span class="badge">行をクリックで開閉</span></h2>
 <table>
-<thead><tr><th>費目</th><th>予算全体の比率</th><th>あなたの負担から</th><th>月額換算</th></tr></thead>
+<thead><tr><th>費目</th><th>総額に対する割合</th><th>あなたの負担から</th><th>月額換算</th></tr></thead>
 <tbody id="rows"></tbody>
 <tfoot id="foot"></tfoot>
 </table>
-<p class="small">費目額・内訳は令和8年度一般会計予算の主要経費別内訳に基づきます。あなたが負担した税・保険料（雇用主負担分を含む）を予算構成比に比例配分した<b>イメージ値</b>です。収支は収入を含まず、税・保険料の負担と給付（年金を含む）のみの差し引きです。</p>
+<p class="small">費目額・内訳は令和8年度一般会計予算の主要経費別内訳に基づきます。国税は一般会計予算の構成比で比例配分し、地方税・復興特別所得税・社会保険料（雇用主負担分を含む）は一般会計とは別枠で、それぞれの使い道に配分した<b>イメージ値</b>です。たばこ税・ガソリン税は国税として扱っています（構成比は個人が払った総額に対する割合）。収支は収入を含まず、税・保険料の負担と給付（年金を含む）のみの差し引きです。</p>
+</div>
+
+<div class="card">
+<h2>④ 差し引き（給付 − 負担）</h2>
+<table>
+<thead><tr><th>項目</th><th>内容</th><th>年額</th><th>月額換算</th></tr></thead>
+<tbody id="balanceRows"></tbody>
+</table>
+<p class="small">収入は含めず、税・社会保険料（雇用主負担を含む）の負担と給付（年金を含む）だけの差し引きです。</p>
 </div>
 </div>
 
@@ -188,7 +208,7 @@ const budget=[
 ];
 const fmt=n=>"¥"+Math.round(n).toLocaleString("ja-JP");
 const el=id=>document.getElementById(id);
-let chart,userTotals=[],balance=null,view={type:"overview",category:-1,child:-1};
+let chart,userTotals=[],extraItems=[],balance=null,view={type:"overview",category:-1,child:-1};
 
 const presets={
  company_single:{age:35,income:5000000,employment:"company",expenseRate:55,areaClass:"1-1",spouse:"none",childrenCount:0,childrenAges:"",rent:100000,assets:1000000,nationalHealth:"",disability:"no",foodSpend:600000,otherSpend:900000,gasLiters:600,engineCc:1500,weightTax:0,tobaccoSpend:0},
@@ -227,8 +247,23 @@ function renderChart(labels,data,colors,title,hint,onClick){
    onHover:(e,elements)=>{e.native.target.style.cursor=elements.length?"pointer":"default";},
    plugins:{legend:{position:"bottom",labels:{color:"#e5e7eb",boxWidth:14,font:{size:12}}},
     tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(c.parsed)}（${(c.parsed/sum*100).toFixed(1)}%）`}}}}});
- el("chartTitle").textContent=title;el("chartHint").textContent=hint;
+ el("chartTitle").textContent="③ 費目の内訳（"+title+"）";el("chartHint").textContent=hint;
  el("chartTotal").textContent=`${fmt(sum)}　/　月額 ${fmt(sum/12)}`;
+}
+let benefitChart;
+function renderBenefitChart(items){
+ const list=items.filter(x=>x.v>0.5);
+ const sum=list.reduce((t,x)=>t+x.v,0);
+ if(benefitChart)benefitChart.destroy();
+ benefitChart=new Chart(el("benefitChart"),{type:"doughnut",
+  data:{labels:list.map(x=>x.n),datasets:[{data:list.map(x=>x.v),backgroundColor:list.map(x=>x.c),borderWidth:0}]},
+  options:{responsive:true,maintainAspectRatio:false,
+   plugins:{legend:{position:"bottom",labels:{color:"#e5e7eb",boxWidth:14,font:{size:12}}},
+    tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(c.parsed)}（${(c.parsed/sum*100).toFixed(1)}%）`}}}}});
+ el("benefitChartTotal").textContent=`${fmt(sum)}　/　月額 ${fmt(sum/12)}`;
+ el("benefitRows").innerHTML=list.length?list.map(x=>`<tr><td>${x.n}</td><td>${(x.v/sum*100).toFixed(1)}%</td><td>${fmt(x.v)}</td><td>${fmt(x.v/12)}</td></tr>`).join(""):`<tr><td colspan="4" style="text-align:center;color:#9ca3af">給付なし</td></tr>`;
+ el("benefitFoot").innerHTML=`<tr class="first"><td>給付合計</td><td>${list.length?"100.0%":"—"}</td><td>${fmt(sum)}</td><td>${fmt(sum/12)}</td></tr>`;
+ el("benefitChartNote").textContent=list.some(x=>x.n.startsWith("生活扶助"))?"生活扶助は、最低生活費（第1類＋第2類＋特例加算）から収入等を引いた不足分の概算です。住宅扶助・医療扶助などは含みません。":(list.length?"":"現在の入力条件では、自動計算できる給付はありません。");
 }
 let burdenChart;
 function renderBurdenChart(items){
@@ -241,22 +276,25 @@ function renderBurdenChart(items){
    plugins:{legend:{position:"bottom",labels:{color:"#e5e7eb",boxWidth:14,font:{size:12}}},
     tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(c.parsed)}（${(c.parsed/sum*100).toFixed(1)}%）`}}}}});
  el("burdenChartTotal").textContent=`${fmt(sum)}　/　月額 ${fmt(sum/12)}`;
+ el("burdenRows").innerHTML=list.map(x=>`<tr><td>${x.n}</td><td>${(x.v/sum*100).toFixed(1)}%</td><td>${fmt(x.v)}</td><td>${fmt(x.v/12)}</td></tr>`).join("");
 }
 function showOverview(){
- view={type:"overview",category:-1,child:-1};el("backBtn").style.display="none";el("balanceBox").style.display="block";
- renderChart(budget.map(b=>b.name),userTotals,budget.map(b=>b.color),"国の予算全体の使われ方",
- "円グラフの区切りをクリックすると、その費目の内訳に進めます。",i=>showCategory(i));
+ view={type:"overview",category:-1,child:-1};el("backBtn").style.display="none";
+ renderChart(budget.map(b=>b.name).concat(extraItems.map(x=>x.name)),userTotals.concat(extraItems.map(x=>x.v)),
+  budget.map(b=>b.color).concat(extraItems.map(x=>x.color)),"あなたが払った総額の使われ方",
+  "国税は一般会計の費目、地方税は地方自治体、復興特別所得税は復興財源、社会保険料は各保険の給付に使われるものとして表示。一般会計の区切りはクリックで内訳に進めます。",
+  i=>{if(i<budget.length)showCategory(i);});
 }
 function showCategory(i){
  view={type:"category",category:i,child:-1};const b=budget[i];normalizeChildren(b.children,b.total);
- const u=userTotals[i];el("backBtn").style.display="inline-block";el("balanceBox").style.display="none";
+ const u=userTotals[i];el("backBtn").style.display="inline-block";
  renderChart(b.children.map(c=>c.name),b.children.map(c=>u*(c.amount/b.total)),b.children.map(c=>c.color),
  `${b.name} の内訳`,"さらに細かい区分がある区切りはクリックで掘り下げられます。",j=>showChild(i,j));
 }
 function showChild(i,j){
  view={type:"child",category:i,child:j};const b=budget[i],c=normalizeChildren(b.children,b.total)[j];
  if(!c.children)return;normalizeChildren(c.children,c.amount);
- const u=userTotals[i]*(c.amount/b.total);el("backBtn").style.display="inline-block";el("balanceBox").style.display="none";
+ const u=userTotals[i]*(c.amount/b.total);el("backBtn").style.display="inline-block";
  renderChart(c.children.map(g=>g.name),c.children.map(g=>u*(g.amount/c.amount)),c.children.map(g=>g.color),
  `${c.name} の内訳`,"← 費目別に戻る、または上の費目名を押して戻れます。",()=>{});
 }
@@ -286,28 +324,33 @@ function calc(){
  }
 
  let insurance=0,employerBurden=0,insuranceTotal=0,insuranceDetail=[];
+ let premUse={pension:0,health:0,care:0,employment:0,support:0,contrib:0};
  if(employment==="company"){
   const monthly=Math.min(650000,Math.max(58000,income/12));
   const health=monthly*.04925,pension=monthly*.0915,emp=monthly*.0005,care=age>=40&&age<65?monthly*.0081:0;
-  insurance=(health+pension+emp+care)*12;
-  employerBurden=(health+pension+monthly*.0085+monthly*.0025)*12;
+  const support=monthly*.00115,contrib=monthly*.0036; // 子ども・子育て支援金0.23%（労使折半）／拠出金0.36%（雇用主のみ）
+  insurance=(health+pension+emp+care+support)*12;
+  employerBurden=(health+pension+monthly*.0085+monthly*.0025+support+contrib)*12;
   insuranceTotal=insurance+employerBurden;
+  premUse={pension:pension*24,health:health*24,care:care*12,employment:(emp+monthly*.0085+monthly*.0025)*12,support:support*24,contrib:contrib*12};
   insuranceDetail=[
    `健康保険：本人 ${fmt(health*12)}／会社 ${fmt(health*12)}`,
    `厚生年金：本人 ${fmt(pension*12)}／会社 ${fmt(pension*12)}`,
    `雇用保険：本人 ${fmt(emp*12)}／会社 ${fmt(monthly*.0085*12)}`,
-   `労災保険：会社負担 ${fmt(monthly*.0025*12)}`
+   `労災保険：会社負担 ${fmt(monthly*.0025*12)}`,
+   `子ども・子育て支援金：本人 ${fmt(support*12)}／会社 ${fmt(support*12)}`,
+   `子ども・子育て拠出金（児童手当等の財源）：会社負担 ${fmt(contrib*12)}`
   ];
   if(care)insuranceDetail.push(`介護保険：本人 ${fmt(care*12)}`);
  }else if(employment==="self"){
   const pension=17920*12;
   const health=nHealthInput!==null?nHealthInput:Math.max(0,income*.10);
-  insurance=pension+health;insuranceTotal=insurance;
+  insurance=pension+health;insuranceTotal=insurance;premUse={pension,health,care:0,employment:0,support:0,contrib:0};
   insuranceDetail=[`国民年金 ${fmt(pension)}`,`国民健康保険 ${fmt(health)}`];
  }else{
   const pension=age<20||age>=60?0:17920*12;
   const health=nHealthInput!==null?nHealthInput:0;
-  insurance=pension+health;insuranceTotal=insurance;
+  insurance=pension+health;insuranceTotal=insurance;premUse={pension,health,care:0,employment:0,support:0,contrib:0};
   insuranceDetail=[];
   if(pension)insuranceDetail.push(`国民年金 ${fmt(pension)}（免除申請で0円になる可能性あり）`);
   if(health)insuranceDetail.push(`国民健康保険 ${fmt(health)}`);
@@ -375,11 +418,12 @@ function calc(){
  const second={1:27790,2:38060,3:44730};
  const ageBand=a=>a<=2?"0-2":a<=5?"3-5":a<=11?"6-11":a<=17?"12-17":a<=64?"18-64":a<=69?"65-69":a<=74?"70-74":"75+";
  const household=[age,...children];
- let lifeAssist=0;
- household.forEach(a=>{const band=ageBand(a);lifeAssist+=(area==="1-1"?first1[band]:first3[band])+2500;});
- lifeAssist+=second[Math.min(3,household.length)];
+ let lifeAssist=0,firstSum=0,addSum=0;
+ household.forEach(a=>{const band=ageBand(a);firstSum+=(area==="1-1"?first1[band]:first3[band]);addSum+=2500;});
+ const secondVal=second[Math.min(3,household.length)];
+ lifeAssist=firstSum+addSum+secondVal;
  const annualLifeAssist=lifeAssist*12;
- const welfareEligible=(income+pensionIncome+childBenefit)<annualLifeAssist&&assets<1000000;
+ const welfareEligible=age>=18&&(income+pensionIncome+childBenefit)<annualLifeAssist&&assets<1000000;
  const welfareAmount=welfareEligible?Math.max(0,annualLifeAssist-(income+pensionIncome+childBenefit)):0;
  const benefits=pensionIncome+childBenefit+welfareAmount;
  const grossBurden=totalBurden+employerBurden; // 本人負担＋雇用主負担
@@ -389,6 +433,12 @@ function calc(){
   {n:"社会保険料（本人）",v:insurance,c:"#34d399"},{n:"社会保険料（雇用主）",v:employerBurden,c:"#10b981"},
   {n:"消費税",v:consumptionTax,c:"#facc15"},{n:"ガソリン税",v:gasolineTax,c:"#fb923c"},
   {n:"自動車税・重量税",v:carTax,c:"#f472b6"},{n:"たばこ関係税",v:tobaccoTax,c:"#94a3b8"}]);
+ const wScale=annualLifeAssist>0?welfareAmount/annualLifeAssist:0;
+ renderBenefitChart([
+  {n:"年金",v:pensionIncome,c:"#38bdf8"},{n:"児童手当",v:childBenefit,c:"#a78bfa"},
+  {n:"生活扶助：第1類（個人別の食費・被服費等）",v:firstSum*12*wScale,c:"#34d399"},
+  {n:"生活扶助：第2類（世帯共通の光熱費・家具等）",v:secondVal*12*wScale,c:"#10b981"},
+  {n:"生活扶助：特例加算",v:addSum*12*wScale,c:"#facc15"}]);
  balance={burden:grossBurden,personal:totalBurden,employer:employerBurden,benefits,net,pension:pensionIncome,child:childBenefit,welfare:welfareAmount};
 
  el("kIncomeTax").textContent=fmt(incomeTax);
@@ -417,14 +467,28 @@ function calc(){
  if(childBenefit)detail.push(`児童手当：年 ${fmt(childBenefit)}（子ども ${children.length}人）`);
  if(welfareEligible)detail.push(`生活保護・生活扶助の概算：年 ${fmt(welfareAmount)}（住宅扶助・医療扶助等は別途）`);
  if(employment==="none"&&insurance>0)detail.push("国民年金保険料は、失業・収入減少等により全額または一部免除を申請できる場合があります。");
+ if(age<18)detail.push("18歳未満は世帯主として生活保護を計算していません（保護者の世帯に属する想定。児童手当は「子どもの人数」に入力した場合に計上されます）。");
  if(welfareEligible)detail.push("生活保護は収入・資産・就労可能性・扶養義務者状況などの個別審査があります。本結果は生活扶助のみの概算です。");
  el("benefitDetail").innerHTML=detail.length?detail.join("<br>"):"現在の入力条件では、自動計算できる主な給付は見つかりませんでした。";
 
- userTotals=budget.map(b=>grossBurden*b.share);
+ const reconstructionTax=incomeTax-incomeTax/1.021;
+ const localTax=residentTax+consumptionTax*.22+autoTax; // 住民税＋地方消費税（消費税の22%）＋自動車税
+ const generalTax=Math.max(0,grossBurden-insuranceTotal-reconstructionTax-localTax);
+ userTotals=budget.map(b=>generalTax*b.share);
+ extraItems=[
+  {name:"【地方税】住民税・地方消費税・自動車税 → 地方自治体の歳出",v:localTax,color:"#f59e0b"},
+  {name:"【復興特別所得税】→ 東日本大震災の復興財源",v:reconstructionTax,color:"#fb7185"},
+  {name:"【社会保険料】年金保険料 → 年金給付",v:premUse.pension,color:"#2dd4bf"},
+  {name:"【社会保険料】健康保険料 → 医療給付（高齢者医療への拠出金を含む）",v:premUse.health,color:"#14b8a6"},
+  {name:"【社会保険料】介護保険料 → 介護給付",v:premUse.care,color:"#0d9488"},
+  {name:"【社会保険料】雇用・労災保険料 → 失業給付・労災給付等",v:premUse.employment,color:"#5eead4"},
+  {name:"【社会保険料】子ども・子育て支援金 → 児童手当の拡充・育児給付等",v:premUse.support,color:"#a3e635"},
+  {name:"【社会保険料】子ども・子育て拠出金（雇用主負担）→ 児童手当等",v:premUse.contrib,color:"#84cc16"}
+ ].filter(x=>x.v>0.5);
  const rows=el("rows");rows.innerHTML="";
  budget.forEach((b,i)=>{
   const u=userTotals[i],rowId="cat-"+i;
-  rows.insertAdjacentHTML("beforeend",`<tr class="cat" data-target="${rowId}"><td><span class="arrow">▶</span>${b.name}</td><td>${(b.share*100).toFixed(1)}%</td><td><b>${fmt(u)}</b></td><td>${fmt(u/12)}</td></tr>`);
+  rows.insertAdjacentHTML("beforeend",`<tr class="cat" data-target="${rowId}"><td><span class="arrow">▶</span>${b.name}</td><td>${(u/grossBurden*100).toFixed(1)}%</td><td><b>${fmt(u)}</b></td><td>${fmt(u/12)}</td></tr>`);
   normalizeChildren(b.children,b.total);
   b.children.forEach((c,j)=>{
    const childId=`${rowId}-${j}`,amount=u*(c.amount/b.total);
@@ -436,20 +500,15 @@ function calc(){
    }
   });
  });
+ extraItems.forEach(x=>rows.insertAdjacentHTML("beforeend",`<tr><td>${x.name}</td><td>${(x.v/grossBurden*100).toFixed(1)}%</td><td><b>${fmt(x.v)}</b></td><td>${fmt(x.v/12)}</td></tr>`));
  const sgn=n=>(n>=0?"+":"-")+fmt(Math.abs(n));
  const frow=(cls,label,share,amt,fn)=>`<tr class="${cls}"><td>${label}</td><td>${share}</td><td>${fn?fn(amt):fmt(amt)}</td><td>${fn?fn(amt/12):fmt(amt/12)}</td></tr>`;
- let foot=frow("first","内訳合計（雇用主負担込み）","100.0%",grossBurden);
- foot+=frow("sub","うち本人負担","—",totalBurden);
- foot+=frow("sub","うち雇用主負担（社会保険）","—",employerBurden);
- if(pensionIncome)foot+=frow("sub","給付：年金","—",pensionIncome);
- if(childBenefit)foot+=frow("sub","給付：児童手当","—",childBenefit);
- if(welfareAmount)foot+=frow("sub","給付：生活扶助（概算）","—",welfareAmount);
- foot+=frow("","給付分 合計","—",benefits);
- foot+=frow("","差し引き（給付－負担）","—",net,sgn);
- el("foot").innerHTML=foot;
- el("chartBenefit").textContent=`${fmt(benefits)}　/　月額 ${fmt(benefits/12)}`;
- el("chartNet").textContent=`${sgn(net)}　/　月額 ${sgn(net/12)}`;
- el("chartNet").className=net>=0?"pos":"neg";
+ el("foot").innerHTML=frow("first","内訳合計（雇用主負担込み）","100.0%",grossBurden);
+ el("burdenFoot").innerHTML=frow("first","負担合計（雇用主負担込み）","100.0%",grossBurden)+frow("sub","うち本人負担","—",totalBurden)+frow("sub","うち雇用主負担（社会保険）","—",employerBurden);
+ const brow=(cls,label,desc,amt,fn)=>`<tr class="${cls}"><td>${label}</td><td>${desc}</td><td>${fn?fn(amt):fmt(amt)}</td><td>${fn?fn(amt/12):fmt(amt/12)}</td></tr>`;
+ el("balanceRows").innerHTML=brow("","負担合計","税・社会保険料（本人＋雇用主負担）",grossBurden)
+  +brow("","給付合計","年金・児童手当・生活扶助",benefits)
+  +brow("total","差し引き（給付 − 負担）",net>=0?"給付が負担を上回る":"負担が給付を上回る",net,sgn);
  el("kNet").parentElement.className="kpi "+(net>=0?"good":"warn");
  document.querySelectorAll(".cat").forEach(tr=>{
   tr.addEventListener("click",()=>{
