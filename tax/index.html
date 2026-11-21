@@ -33,6 +33,10 @@ table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:8px;border-bottom:1px solid var(--line);text-align:right}
 th:first-child,td:first-child{text-align:left}
 tfoot td{font-weight:700;border-top:1px solid #334155;border-bottom:0;background:#0b1220}
+.src a{color:#7dd3fc;word-break:break-all}
+.src h3{margin:18px 0 6px;font-size:15px}
+.src ul{margin:6px 0 6px 18px;padding:0;line-height:1.7;font-size:13px;color:#cbd5e1}
+.src td,.src th{vertical-align:top;font-size:13px}
 tr.total td{font-weight:700;font-size:16px;border-top:2px solid #334155}
 tfoot tr.first td{border-top:2px solid #334155}
 tfoot tr.sub td{font-weight:400;color:#cbd5e1;font-size:13px;border-top:1px solid var(--line)}
@@ -98,7 +102,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <div><label>年間のたばこ購入額（任意）</label><input id="tobaccoSpend" type="number" min="0" step="1000" value="0"></div>
 </div>
 <button id="calc">税金・社会保険料・給付を試算する</button>
-<p class="small">※消費税は食費等を8％、その他を10％で概算します。ガソリン税は揮発油税・石油ガス税等を含め約53.8円/L、自動車税は排気量別の年額目安、たばこは購入額の約63.5％を税・特別税等として概算します。実際は燃料種別・車種・自治体・商品により異なります。</p>
+<p class="small">※消費税は食費等を8％、その他を10％で概算します。ガソリン税は揮発油税・地方揮発油税28.7円/Lと石油石炭税2.8円/Lの合計31.5円/L（ガソリンの暫定税率は令和7年12月31日に廃止）、自動車税は排気量別の年額目安、たばこは購入額の約63.5％を税・特別税等として概算します。実際は燃料種別・車種・自治体・商品により異なります。</p>
 </div>
 
 <div class="card result">
@@ -172,40 +176,101 @@ tfoot tr.sub td:first-child{padding-left:28px}
 </table>
 <p class="small">収入は含めず、税・社会保険料（雇用主負担を含む）の負担と給付（年金を含む）だけの差し引きです。</p>
 </div>
+
+<div class="card src">
+<h2>数字の出どころ・計算方法</h2>
+<p class="small">令和8年度（2026年度）の制度を前提にした概算です。下の「出どころ」で、リンクのあるものは原典を確認できます。リンクのない項目は概算値で、今回は原典を確認していません。</p>
+
+<h3>計算方法</h3>
+<ul>
+<li><b>給与所得</b>：年収 − 給与所得控除（令和8・9年分は、220万円以下は74万円、以降は年収に応じて最大195万円）。個人事業主は 年収 ×（1 − 必要経費率）。</li>
+<li><b>年金の所得</b>：年金受給額 − 公的年金等控除（65歳以上は最低110万円、65歳未満は最低60万円）。給付としては年金受給額をそのまま計上します。</li>
+<li><b>所得控除</b>：基礎控除（令和8年分。合計所得489万円以下は104万円、655万円以下は67万円、2,350万円以下は62万円、以降は段階的に減少）＋社会保険料控除（本人負担分）＋配偶者控除38万円＋扶養控除（16〜18歳38万円、19〜22歳63万円）。</li>
+<li><b>所得税</b>：課税所得に5〜45%の7段階の累進税率を適用し、復興特別所得税として×1.021。</li>
+<li><b>住民税</b>：（所得 − 基礎控除43万円 − 社会保険料 − 配偶者控除33万円 − 扶養控除（16〜18歳33万円、19〜22歳45万円））×10% − 調整控除（人的控除の差×5%）＋均等割5,000円＋森林環境税1,000円。合計所得が非課税限度額（単身は45万円）以下なら0円です。</li>
+<li><b>社会保険料（会社員）</b>：標準報酬月額を年収÷12（下限5.8万円・上限65万円）で近似し、健康保険9.85%・厚生年金18.3%・介護1.62%（40〜64歳）・子ども・子育て支援金0.23%を労使で折半。雇用保険は本人0.5%・会社0.85%、労災は会社0.25%、子ども・子育て拠出金0.36%は会社のみ負担。</li>
+<li><b>社会保険料（個人事業主・無職）</b>：国民年金は月17,920円（20〜59歳のみ）。国民健康保険料は入力値、空欄なら個人事業主は所得の約10%。無職の65〜74歳などは自治体差が大きいため空欄だと0円で、結果欄に注記が出ます。</li>
+<li><b>後期高齢者医療（75歳以上）</b>：全国平均の料率で、均等割56,083円＋所得割10.17%×（所得 − 43万円）に、子ども分（均等割1,351円＋所得割0.25%）を加算します。所得が低い場合は均等割を7割・5割・2割軽減します。</li>
+<li><b>介護保険料（65歳以上・第1号）</b>：第9期の全国平均基準額（月6,225円）×所得段階の乗率（0.285〜2.4）。年金の天引きで、単身世帯を想定します。</li>
+<li><b>消費税</b>：食費等×8%＋その他×10%。そのうち22%（2.2/10）を地方消費税として扱います。</li>
+<li><b>ガソリン税・自動車関係・たばこ</b>：ガソリンは31.5円/L（ガソリン税28.7円＋石油石炭税2.8円）、自動車税は排気量別の年額、重量税は入力値、たばこは購入額×63.5%で概算します。</li>
+<li><b>児童手当</b>：3歳未満は月1.5万円、3歳〜高校生年代は月1万円、第3子以降は月3万円。</li>
+<li><b>生活扶助（生活保護）</b>：最低生活費（第1類＋第2類＋特例加算2,500円/人）から、収入・年金・児童手当を引いた不足分。資産100万円未満・18歳以上のときだけ計算します。住宅扶助・医療扶助などは含みません。</li>
+<li><b>使い道への配分</b>：国税は一般会計予算の構成比で配分します。地方税は地方自治体、復興特別所得税は復興財源、社会保険料は年金・医療・介護・雇用・児童手当等の各給付に使われるものとして別枠にしています。</li>
+<li><b>差し引き</b>：給付合計 −（税・社会保険料。雇用主負担を含む）。収入は含みません。</li>
+</ul>
+
+<h3>出どころ</h3>
+<table>
+<thead><tr><th>項目</th><th>使っている値</th><th>原典</th></tr></thead>
+<tbody>
+<tr><td>一般会計予算の費目</td><td>令和8年度の主要経費別の構成比</td><td><a href="https://www.mof.go.jp/policy/budget/budger_workflow/budget/fy2026/seifuan2026/index.html" target="_blank" rel="noopener">財務省 令和8年度予算</a><br><a href="https://www.mof.go.jp/policy/budget/budger_workflow/budget/fy2026/tousyoyosetsu2.pdf" target="_blank" rel="noopener">令和8年度予算の説明（総説・主要経費別の付表・PDF）</a><br><a href="https://www.mof.go.jp/about_mof/mof_budget/budget/fy2026/20251226.html" target="_blank" rel="noopener">財務省 令和8年度国債費の内訳</a><br><a href="https://www.mod.go.jp/j/press/wp/wp2026/html/n220402000.html" target="_blank" rel="noopener">防衛省 防衛関係費の内訳</a></td></tr>
+<tr><td>所得税の税率</td><td>5〜45%の7段階（195万円・330万円・695万円・900万円・1,800万円・4,000万円）</td><td><a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/2260.htm" target="_blank" rel="noopener">国税庁 No.2260 所得税の税率</a><br><a href="https://www.nta.go.jp/publication/pamph/gensen/nencho2026/pdf/115.pdf" target="_blank" rel="noopener">令和8年分の速算表（PDF）</a></td></tr>
+<tr><td>基礎控除・給与所得控除</td><td>令和8年度税制改正後（令和8・9年分）：基礎控除は合計所得に応じて104万円〜0円、給与所得控除の最低額は74万円</td><td><a href="https://www.nta.go.jp/publication/pamph/gensen/nencho2026/pdf/102.pdf" target="_blank" rel="noopener">国税庁 令和8年分 年末調整のしかた（改正点・PDF）</a></td></tr>
+<tr><td>公的年金等控除</td><td>65歳以上は最低110万円、65歳未満は最低60万円</td><td><a href="https://www.nta.go.jp/publication/pamph/koho/kurashi/html/03_1.htm" target="_blank" rel="noopener">国税庁 年金収入の所得計算</a></td></tr>
+<tr><td>健康保険料・介護保険料</td><td>協会けんぽの料率（概算。都道府県ごとに異なる）</td><td><a href="https://www.kyoukaikenpo.or.jp/g7/cat330/sb3130/r08/260216/" target="_blank" rel="noopener">協会けんぽ 令和8年度の保険料率</a></td></tr>
+<tr><td>厚生年金保険料・子ども・子育て拠出金</td><td>厚生年金18.3%（労使折半）、拠出金0.36%（事業主のみ）</td><td><a href="https://www.nenkin.go.jp/service/kounen/hokenryo/ryogaku/ryogakuhyo/20200825.html" target="_blank" rel="noopener">日本年金機構 厚生年金保険料額表</a></td></tr>
+<tr><td>子ども・子育て支援金</td><td>0.23%（労使折半）。2026年4月分から</td><td><a href="https://www.kyoukaikenpo.or.jp/shibu/gifu/assets/syahogifu202604.pdf" target="_blank" rel="noopener">協会けんぽ 令和8年4月からの保険料額表（PDF）</a><br><a href="https://www.mhlw.go.jp/hourei/doc/tsuchi/T260305S0021.pdf" target="_blank" rel="noopener">子ども・子育て支援金制度のリーフレット（PDF）</a></td></tr>
+<tr><td>後期高齢者医療保険料</td><td>令和8・9年度の全国平均：均等割56,083円、所得割10.17%、子ども分は均等割1,351円・所得割0.25%。軽減は7割・5割・2割</td><td><a href="https://www.mhlw.go.jp/stf/newpage_72371.html" target="_blank" rel="noopener">厚生労働省 後期高齢者医療の令和8・9年度の保険料率</a><br><a href="https://www.mhlw.go.jp/content/12401000/001765879.pdf" target="_blank" rel="noopener">均等割の軽減（PDF）</a></td></tr>
+<tr><td>介護保険料（第1号）</td><td>第9期の全国平均基準額 月6,225円、標準13段階の乗率（0.285〜2.4）</td><td><a href="https://www.mhlw.go.jp/stf/newpage_40211.html" target="_blank" rel="noopener">厚生労働省 第9期の第1号保険料</a><br><a href="https://www.mhlw.go.jp/content/12300000/001750951.pdf" target="_blank" rel="noopener">第1号保険料の在り方（PDF）</a></td></tr>
+<tr><td>雇用保険料率</td><td>一般の事業：本人0.5%、事業主0.85%</td><td><a href="https://www.mhlw.go.jp/content/001692566.pdf" target="_blank" rel="noopener">厚生労働省 令和8年度 雇用保険料率のご案内（PDF）</a></td></tr>
+<tr><td>児童手当</td><td>3歳未満1.5万円、3歳〜高校生年代1万円、第3子以降3万円</td><td><a href="https://www.pref.kanagawa.jp/docs/he8/faq/p3135.html" target="_blank" rel="noopener">神奈川県 児童手当の制度（こども家庭庁の制度の案内）</a></td></tr>
+<tr><td>生活扶助の基準額</td><td>第1類・第2類の基準額（令和7年10月）、特例加算は令和8年10月から月2,500円</td><td><a href="https://www.mhlw.go.jp/content/001152601.pdf" target="_blank" rel="noopener">厚生労働省 生活扶助基準額の算出方法（PDF）</a><br><a href="https://www.mhlw.go.jp/content/12002000/001662704.pdf" target="_blank" rel="noopener">令和8年度生活扶助基準の見直し（PDF）</a></td></tr>
+<tr><td>国民年金保険料</td><td>月17,920円（令和8年度）</td><td><a href="https://www.nenkin.go.jp/service/kokunen/hokenryo/hokenryo.html" target="_blank" rel="noopener">日本年金機構 国民年金保険料</a></td></tr>
+<tr><td>ガソリン税</td><td>ガソリン税28.7円/L＋石油石炭税2.8円/L（暫定税率25.1円は令和7年12月31日に廃止）</td><td><a href="https://www.enecho.meti.go.jp/about/special/johoteikyo/zanteizeiritsu.html" target="_blank" rel="noopener">資源エネルギー庁 ガソリン暫定税率の廃止</a><br><a href="https://selectra.jp/energy/gasoline/tax" target="_blank" rel="noopener">税額の内訳（参考：民間サイト）</a></td></tr>
+<tr><td>住民税、消費税、自動車税、たばこ税</td><td>税率10%＋均等割5,000円／8%・10%／排気量別の年額／購入額の63.5%</td><td>原典リンクなし（概算値）</td></tr>
+</tbody>
+</table>
+
+<h3>注意（簡略化・未反映の点）</h3>
+<ul>
+<li>所得税の基礎控除と給与所得控除は、令和8年度税制改正後の令和8年分（年末調整は令和8年12月）の水準で計算しています。給与収入が約69万〜220万円の人に適用される特例の計算式は簡略化しています。</li>
+<li>配偶者控除・扶養控除は、令和8年分で変わった所得要件に対応しておらず、配偶者控除は一律38万円、扶養控除は年齢だけで判定しています。</li>
+<li>住民税は所得税と同じ所得金額を使い、基礎控除は43万円のままです。住民税側の令和8年度改正は確認していません。調整控除は令和8年分の所得税の基礎控除の引上げを反映していません。特定親族特別控除、住宅ローン控除、医療費控除などは入っていません。</li>
+<li>後期高齢者医療と介護保険料（第1号）は、全国平均の料率・基準額による概算で、単身世帯を想定しています。自治体ごとの料率、賦課限度額、令和8・9年度に限る軽減の上乗せは反映していません。65〜74歳の国民健康保険料は自治体差が大きいため、入力がなければ含めていません。</li>
+<li>生活扶助は、世帯人員ごとの逓減率、冬季加算、母子加算などを反映していません。</li>
+<li>健康保険の標準報酬月額の上限（65万円）は厚生年金の上限で近似しています。健康保険は実際には上限がもっと高く、健保組合は料率が異なります。</li>
+<li>支援金・拠出金・保険料は、2026年度の料率を12か月分かけた年額です（支援金は2026年4月開始）。</li>
+<li>一般会計の費目額は、財務省「令和8年度予算の説明」（付表の主要経費別表）と照合しました。国債費の内訳は財務省の概算の公表資料、防衛関係費の人件・糧食費は防衛省の資料に基づきます。</li>
+<li>本ツールは試算用のイメージ値で、税務・法律・生活保護の判定を代替するものではありません。</li>
+</ul>
+</div>
+
 </div>
 
 <script>
 const budget=[
-{name:"社会保障（年金・医療・介護・子ども・子育て等）",share:.319,total:390559,color:"#38bdf8",children:[
+{name:"社会保障（年金・医療・介護・子ども・子育て等）",total:390559,color:"#38bdf8",children:[
  {name:"年金給付費",amount:139012,color:"#38bdf8"},{name:"医療給付費",amount:126895,color:"#0ea5e9"},
- {name:"介護給付費",amount:37806,color:"#22d3ee"},{name:"生活扶助等社会福祉費",amount:47278,color:"#67e8f9"},
+ {name:"介護給付費",amount:37806,color:"#22d3ee"},{name:"生活扶助等社会福祉費",amount:47277,color:"#67e8f9"},
  {name:"少子化対策費",amount:35335,color:"#a5f3fc"},{name:"保健衛生対策費",amount:3778,color:"#7dd3fc"},
- {name:"雇用労災対策費",amount:456,color:"#bae6fd"},{name:"その他・調整",amount:0,color:"#64748b"}]},
-{name:"国債費（元本償還・利払い）",share:.256,total:312758,color:"#f472b6",children:[
- {name:"債務償還費（交付国債分を除く）",amount:178898,color:"#f472b6"},{name:"利払費",amount:130371,color:"#fb7185"},{name:"その他・調整",amount:3489,color:"#9f1239"}]},
-{name:"地方交付税交付金等（地方への配分）",share:.171,total:208778,color:"#facc15",children:[
+ {name:"雇用労災対策費",amount:456,color:"#bae6fd"}]},
+{name:"国債費（元本償還・利払い）",total:312758,color:"#f472b6",children:[
+ {name:"債務償還費（公債等償還・借入金償還）",amount:182086,color:"#f472b6"},{name:"利子及割引料（利払費）",amount:130371,color:"#fb7185"},
+ {name:"国債事務取扱費等",amount:300,color:"#9f1239"}]},
+{name:"地方交付税交付金等（地方への配分）",total:208778,color:"#facc15",children:[
  {name:"地方交付税交付金",amount:200622,color:"#facc15"},{name:"地方特例交付金",amount:8156,color:"#fde047"}]},
-{name:"公共事業（防災・インフラ等）",share:.049,total:60460,color:"#34d399",children:[
- {name:"道路整備事業費",amount:16783,color:"#34d399"},{name:"治山治水対策事業費",amount:9679,color:"#10b981"},
- {name:"公園・水道・廃棄物処理等施設整備費",amount:2444,color:"#6ee7b7"},{name:"災害復旧等事業費",amount:618,color:"#a7f3d0"},
- {name:"推進費等",amount:789,color:"#5eead4"},{name:"その他（都市・住宅、港湾・空港、農業農村整備等）",amount:30147,color:"#475569"}]},
-{name:"文教・科学技術振興",share:.049,total:60406,color:"#a78bfa",children:[
- {name:"文教関係費",amount:46029,color:"#a78bfa",children:[
-  {name:"教育振興助成費等",amount:26983,color:"#a78bfa",note:"義務教育費国庫負担金などを含む"},
-  {name:"義務教育費国庫負担金",amount:17118,color:"#c4b5fd",note:"教育振興助成費等に含まれる主要項目"},
-  {name:"文教施設費",amount:7123,color:"#ddd6fe"},{name:"育英事業費",amount:12150,color:"#8b5cf6"}]},
- {name:"科学技術振興費",amount:14378,color:"#818cf8"},{name:"その他・調整",amount:0,color:"#64748b"}]},
-{name:"防衛関係費",share:.073,total:89843,color:"#fb923c",children:[
- {name:"人件・糧食費",amount:23508,color:"#fb923c",children:[{name:"隊員の給与・退職金・営内食事等",amount:23508,color:"#fdba74"}]},
- {name:"物件費",amount:66335,color:"#f97316",children:[
-  {name:"一般物件費（当年契約分）",amount:19599,color:"#fdba74"},
-  {name:"歳出化経費（過去契約の支払い等）",amount:46857,color:"#ea580c",note:"装備品・施設・研究開発・基地対策等を含む"}]}]},
-{name:"その他の歳出",share:.083,total:100288,color:"#94a3b8",children:[
- {name:"その他の事項経費",amount:73500,color:"#94a3b8"},{name:"エネルギー対策費",amount:20000,color:"#60a5fa"},
- {name:"食料安定供給関係費",amount:14500,color:"#4ade80"},{name:"予備費",amount:11000,color:"#f87171"},
- {name:"経済協力費",amount:3500,color:"#fbbf24"},{name:"中小企業対策費",amount:1400,color:"#2dd4bf"},
- {name:"復興加速化・福島再生予備費",amount:700,color:"#fda4af"},{name:"恩給関係費",amount:688,color:"#a3a3a3"}]}
+{name:"公共事業（防災・インフラ等）",total:61078,color:"#34d399",children:[
+ {name:"道路整備事業費",amount:16783,color:"#34d399"},{name:"社会資本総合整備事業費",amount:13126,color:"#10b981"},
+ {name:"治山治水対策事業費",amount:9679,color:"#6ee7b7"},{name:"住宅都市環境整備事業費",amount:7321,color:"#a7f3d0"},
+ {name:"農林水産基盤整備事業費",amount:6137,color:"#5eead4"},{name:"港湾空港鉄道等整備事業費",amount:4179,color:"#2dd4bf"},
+ {name:"公園水道廃棄物処理等施設整備費",amount:2444,color:"#14b8a6"},{name:"推進費等",amount:789,color:"#475569"},
+ {name:"災害復旧等事業費",amount:618,color:"#64748b"}]},
+{name:"文教・科学技術振興",total:60406,color:"#a78bfa",children:[
+ {name:"教育振興助成費",amount:26983,color:"#a78bfa"},{name:"義務教育費国庫負担金",amount:17118,color:"#c4b5fd"},
+ {name:"科学技術振興費",amount:14378,color:"#818cf8"},{name:"育英事業費",amount:1215,color:"#8b5cf6"},
+ {name:"文教施設費",amount:712,color:"#ddd6fe"}]},
+{name:"防衛関係費",total:89843,color:"#fb923c",children:[
+ {name:"人件・糧食費",amount:23897,color:"#fb923c",note:"隊員の給与・退職金・営内食事等"},
+ {name:"物件費等",amount:65946,color:"#f97316",note:"装備品・施設・研究開発・基地対策・SACO関係経費等。防衛省所管の総額から人件・糧食費を引いた額"}]},
+{name:"その他の歳出",total:99670,color:"#94a3b8",children:[
+ {name:"その他の事項経費（各府省の一般行政費等）",amount:61640,color:"#94a3b8"},{name:"食料安定供給関係費",amount:12729,color:"#4ade80"},
+ {name:"予備費",amount:10000,color:"#f87171"},{name:"エネルギー対策費",amount:8001,color:"#60a5fa"},
+ {name:"経済協力費",amount:5108,color:"#fbbf24"},{name:"中小企業対策費",amount:1700,color:"#2dd4bf"},
+ {name:"恩給関係費",amount:493,color:"#a3a3a3"}]}
 ];
+// 各費目の構成比は、一般会計の歳出総額に対する割合として自動計算
+(()=>{const t=budget.reduce((a,b)=>a+b.total,0);budget.forEach(b=>b.share=b.total/t);})();
 const fmt=n=>"¥"+Math.round(n).toLocaleString("ja-JP");
 const el=id=>document.getElementById(id);
 let chart,userTotals=[],extraItems=[],balance=null,view={type:"overview",category:-1,child:-1};
@@ -235,7 +300,7 @@ function applyPreset(){
 function normalizeChildren(items,parentTotal){
  let sum=0;items.forEach(c=>sum+=c.amount);
  const diff=parentTotal-sum;
- if(Math.abs(diff)>1)items.push({name:"その他・調整",amount:diff,color:"#64748b"});
+ if(Math.abs(diff)>2)items.push({name:"その他・調整",amount:diff,color:"#64748b"});
  return items;
 }
 function renderChart(labels,data,colors,title,hint,onClick){
@@ -312,17 +377,39 @@ function calc(){
  const children=childAges.slice(0,childCount);
 
  let incomeAmount=0;
- if(employment==="company")incomeAmount=Math.max(0,income-(income<=1625000?550000:income<=1800000?income*.4-100000:income<=3600000?income*.3+80000:income<=6600000?income*.2+440000:income<=8500000?income*.1+1100000:1950000));
+ if(employment==="company")incomeAmount=Math.max(0,income-(income<=2200000?740000:income<=3600000?income*.3+80000:income<=6600000?income*.2+440000:income<=8500000?income*.1+1100000:1950000));
  else if(employment==="self")incomeAmount=Math.max(0,income*(1-expenseRate));
  else incomeAmount=0;
  // 年金（雑所得）：公的年金等控除を差し引いて課税対象に加算
+ let pensionMisc=0;
  if(pensionIncome>0){
   const p=pensionIncome;let pd;
   if(age>=65)pd=p<=3300000?1100000:p<=4100000?p*.25+275000:p<=7700000?p*.15+685000:p<=9900000?p*.05+1455000:1955000;
   else pd=p<=1300000?600000:p<=4100000?p*.25+275000:p<=7700000?p*.15+685000:p<=9900000?p*.05+1455000:1955000;
-  incomeAmount+=Math.max(0,p-pd);
+  pensionMisc=Math.max(0,p-pd);
+  incomeAmount+=pensionMisc;
  }
 
+ // 後期高齢者医療（75歳以上）：令和8・9年度の全国平均の料率（医療分＋子ども分）。単身世帯を想定
+ const calcKouki=()=>{
+  const judge=Math.max(0,incomeAmount-(pensionIncome>0?150000:0)); // 軽減判定の所得（年金所得から15万円を控除）
+  const cut=judge<=430000?.7:judge<=740000?.5:judge<=1000000?.2:0;
+  const medical=56083*(1-cut)+Math.max(0,incomeAmount-430000)*.1017;
+  const child=1351*(1-cut)+Math.max(0,incomeAmount-430000)*.0025;
+  return{medical,child,total:medical+child,cut};
+ };
+ // 介護保険の第1号保険料（65歳以上）：第9期の全国平均基準額 月6,225円×所得段階の乗率。単身世帯を想定
+ const calcCare1=()=>{
+  let rate;
+  if(incomeAmount<=450000){ // 住民税非課税（単身）
+   const x=pensionIncome+Math.max(0,incomeAmount-pensionMisc);
+   rate=x<=809000?.285:x<=1200000?.485:.685;
+  }else{
+   rate=incomeAmount<1200000?1.2:incomeAmount<2100000?1.3:incomeAmount<3200000?1.5:incomeAmount<4200000?1.7:incomeAmount<5200000?1.9:incomeAmount<6200000?2.1:incomeAmount<7200000?2.3:2.4;
+  }
+  return{amount:6225*12*rate,rate};
+ };
+ const kouki=(age>=75&&employment!=="company")?calcKouki():null;
  let insurance=0,employerBurden=0,insuranceTotal=0,insuranceDetail=[];
  let premUse={pension:0,health:0,care:0,employment:0,support:0,contrib:0};
  if(employment==="company"){
@@ -343,20 +430,34 @@ function calc(){
   ];
   if(care)insuranceDetail.push(`介護保険：本人 ${fmt(care*12)}`);
  }else if(employment==="self"){
-  const pension=17920*12;
-  const health=nHealthInput!==null?nHealthInput:Math.max(0,income*.10);
+  const pension=(age>=60||age<20)?0:17920*12;
+  const health=nHealthInput!==null?nHealthInput:(kouki?kouki.total:Math.max(0,income*.10));
   insurance=pension+health;insuranceTotal=insurance;premUse={pension,health,care:0,employment:0,support:0,contrib:0};
-  insuranceDetail=[`国民年金 ${fmt(pension)}`,`国民健康保険 ${fmt(health)}`];
+  insuranceDetail=[];
+  if(pension)insuranceDetail.push(`国民年金 ${fmt(pension)}`);
+  if(health)insuranceDetail.push(kouki&&nHealthInput===null?`後期高齢者医療保険料 ${fmt(health)}（全国平均の料率で概算）`:`国民健康保険 ${fmt(health)}`);
  }else{
   const pension=age<20||age>=60?0:17920*12;
-  const health=nHealthInput!==null?nHealthInput:0;
+  const health=nHealthInput!==null?nHealthInput:(kouki?kouki.total:0);
   insurance=pension+health;insuranceTotal=insurance;premUse={pension,health,care:0,employment:0,support:0,contrib:0};
   insuranceDetail=[];
   if(pension)insuranceDetail.push(`国民年金 ${fmt(pension)}（免除申請で0円になる可能性あり）`);
-  if(health)insuranceDetail.push(`国民健康保険 ${fmt(health)}`);
+  if(health)insuranceDetail.push(kouki&&nHealthInput===null?`後期高齢者医療保険料 ${fmt(health)}（全国平均の料率で概算）`:`国民健康保険 ${fmt(health)}`);
+  if(!kouki&&nHealthInput===null)insuranceDetail.push("国民健康保険料は自治体差が大きいため試算に含めていません。入力欄に年額を入れてください。");
  }
 
- let deductions=480000+insurance;
+ // 後期高齢者医療の内訳（使い道は医療給付と子ども・子育て支援）
+ if(kouki&&nHealthInput===null&&employment!=="company"){premUse.health=kouki.medical;premUse.support=kouki.child;}
+ // 65歳以上は介護保険料（第1号）を負担
+ if(age>=65){
+  const c1=calcCare1();
+  insurance+=c1.amount;insuranceTotal+=c1.amount;premUse.care+=c1.amount;
+  insuranceDetail.push(`介護保険料（第1号）：${fmt(c1.amount)}（全国平均の基準額×乗率${c1.rate}。単身世帯の想定）`);
+ }
+
+ // 令和8年分の基礎控除（合計所得金額に応じて）
+ const basicDeduction=incomeAmount<=4890000?1040000:incomeAmount<=6550000?670000:incomeAmount<=23500000?620000:incomeAmount<=24000000?480000:incomeAmount<=24500000?320000:incomeAmount<=25000000?160000:0;
+ let deductions=basicDeduction+insurance;
  if(spouse==="dependent")deductions+=380000;
  let dependentDeduction=0;
  children.forEach(a=>{if(a>=16&&a<=18)dependentDeduction+=380000;if(a>=19&&a<=22)dependentDeduction+=630000;});
@@ -364,16 +465,20 @@ function calc(){
  const taxableIncome=Math.max(0,incomeAmount-deductions);
  let incomeTax=0;
  if(taxableIncome>0){
-  const brackets=[[1000000,.05],[1800000,.10],[3600000,.20],[6600000,.23],[9500000,.33],[18000000,.40],[Infinity,.45]];
+  const brackets=[[1950000,.05],[3300000,.10],[6950000,.20],[9000000,.23],[18000000,.33],[40000000,.40],[Infinity,.45]];
   let prev=0;
   for(const[cap,rate]of brackets){if(taxableIncome>prev){incomeTax+=(Math.min(taxableIncome,cap)-prev)*rate;prev=cap;}else break;}
   incomeTax*=1.021;
  }
- const resTaxable=Math.max(0,incomeAmount-430000-insurance-(spouse==="dependent"?380000:0)-dependentDeduction);
- let adjustment=0;
- if(taxableIncome<=2000000)adjustment=Math.max(0,resTaxable*.03-(taxableIncome*.05-97500));
- else adjustment=Math.max(0,resTaxable*.03-(2000000*.05-97500));
- const residentTax=Math.max(0,resTaxable*.10-adjustment+5000);
+ // 住民税：住民税の控除額（基礎43万円、配偶者33万円、扶養16〜18歳33万円・19〜22歳45万円）で課税標準を計算
+ let resDependent=0,resDiff=50000+(spouse==="dependent"?50000:0); // 調整控除の対象となる人的控除額の差（基礎5万円、配偶者5万円）
+ children.forEach(a=>{if(a>=16&&a<=18){resDependent+=330000;resDiff+=50000;}if(a>=19&&a<=22){resDependent+=450000;resDiff+=180000;}});
+ const resTaxable=Math.floor(Math.max(0,incomeAmount-430000-insurance-(spouse==="dependent"?330000:0)-resDependent)/1000)*1000;
+ const adjustment=resTaxable<=2000000?Math.min(resDiff,resTaxable)*.05:Math.max(2500,(resDiff-(resTaxable-2000000))*.05);
+ // 均等割（5,000円）＋森林環境税（1,000円）。合計所得が非課税限度額以下なら課されない（1級地）
+ const resDependents=(spouse==="dependent"?1:0)+childCount;
+ const resExemptLimit=350000*(1+resDependents)+100000+(resDependents>0?210000:0);
+ const residentTax=incomeAmount<=resExemptLimit?0:Math.max(0,resTaxable*.10-adjustment)+6000;
  const taxBurden=incomeTax+residentTax;
  const burden=taxBurden+insurance;
 
@@ -385,7 +490,7 @@ function calc(){
  const weightTax=Math.max(0,+el("weightTax").value||0);
  const tobaccoSpend=Math.max(0,+el("tobaccoSpend").value||0);
  const consumptionTax=foodSpend*.08+otherSpend*.10;
- const gasolineTax=gasLiters*53.8;
+ const gasolineTax=gasLiters*31.5; // ガソリン税28.7円＋石油石炭税2.8円（暫定税率は令和7年12月31日に廃止）
  let autoTax=0;
  if(engineCc>0){
   if(engineCc<=1000)autoTax=25000;
@@ -466,7 +571,7 @@ function calc(){
  if(pensionIncome)detail.push(`年金：年 ${fmt(pensionIncome)}（給付として計上。所得税・住民税の計算には公的年金等控除を反映）`);
  if(childBenefit)detail.push(`児童手当：年 ${fmt(childBenefit)}（子ども ${children.length}人）`);
  if(welfareEligible)detail.push(`生活保護・生活扶助の概算：年 ${fmt(welfareAmount)}（住宅扶助・医療扶助等は別途）`);
- if(employment==="none"&&insurance>0)detail.push("国民年金保険料は、失業・収入減少等により全額または一部免除を申請できる場合があります。");
+ if(employment==="none"&&age>=20&&age<60&&insurance>0)detail.push("国民年金保険料は、失業・収入減少等により全額または一部免除を申請できる場合があります。");
  if(age<18)detail.push("18歳未満は世帯主として生活保護を計算していません（保護者の世帯に属する想定。児童手当は「子どもの人数」に入力した場合に計上されます）。");
  if(welfareEligible)detail.push("生活保護は収入・資産・就労可能性・扶養義務者状況などの個別審査があります。本結果は生活扶助のみの概算です。");
  el("benefitDetail").innerHTML=detail.length?detail.join("<br>"):"現在の入力条件では、自動計算できる主な給付は見つかりませんでした。";
