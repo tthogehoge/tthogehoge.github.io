@@ -128,15 +128,20 @@ tfoot tr.sub td:first-child{padding-left:28px}
 </div>
 
 <div class="card">
-<h2>① 負担の内訳（何にいくら払っているか）</h2>
+<div class="chart-head">
+<h2 id="burdenChartTitle" style="margin:0">① 負担の内訳（何にいくら払っているか）</h2>
+<button class="back" id="backBurdenBtn">← 負担別に戻る</button>
+</div>
 <div class="chartbox"><canvas id="burdenChart"></canvas></div>
 <div class="total-line"><span>負担合計（雇用主負担込み）</span><b id="burdenChartTotal">-</b></div>
+<p class="small" id="burdenChartHint">社会保険料の区切りをクリックすると、内訳に進めます。</p>
+<h2>負担項目の内訳 <span class="badge">行をクリックで開閉</span></h2>
 <table>
 <thead><tr><th>項目</th><th>構成比</th><th>年額</th><th>月額換算</th></tr></thead>
 <tbody id="burdenRows"></tbody>
 <tfoot id="burdenFoot"></tfoot>
 </table>
-<p class="small">所得税・住民税・社会保険料（本人／雇用主）・消費税・ガソリン税・自動車税・たばこ税の内訳です。0円の項目は表示しません。</p>
+<p class="small">所得税・住民税・社会保険料・消費税・ガソリン税・自動車税・たばこ税の内訳です。社会保険料は行をクリックすると本人負担・雇用主負担・子ども・子育て支援金・拠出金の内訳を展開できます。0円の項目は表示しません。</p>
 </div>
 
 <div class="card">
@@ -342,18 +347,64 @@ function renderBenefitChart(items){
  el("benefitFoot").innerHTML=`<tr class="first"><td>給付合計</td><td>${list.length?"100.0%":"—"}</td><td>${fmt(sum)}</td><td>${fmt(sum/12)}</td></tr>`;
  el("benefitChartNote").textContent=list.some(x=>x.n.startsWith("生活扶助"))?"生活扶助は、最低生活費（第1類＋第2類＋特例加算）から収入等を引いた不足分の概算です。住宅扶助・医療扶助などは含みません。":(list.length?"":"現在の入力条件では、自動計算できる給付はありません。");
 }
-let burdenChart;
-function renderBurdenChart(items){
- const list=items.filter(x=>x.v>0.5);
+let burdenChart,burdenTopItems=[],burdenView={type:"overview"};
+function renderBurdenChartDoughnut(labels,data,colors,onClick){
  if(burdenChart)burdenChart.destroy();
- const sum=list.reduce((a,x)=>a+x.v,0);
+ const sum=data.reduce((a,b)=>a+b,0);
  burdenChart=new Chart(el("burdenChart"),{type:"doughnut",
-  data:{labels:list.map(x=>x.n),datasets:[{data:list.map(x=>x.v),backgroundColor:list.map(x=>x.c),borderWidth:0}]},
+  data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0}]},
   options:{responsive:true,maintainAspectRatio:false,
+   onClick:(e,elements)=>{if(elements.length&&onClick)onClick(elements[0].index);},
+   onHover:(e,elements)=>{
+    let pointer=false;
+    if(elements.length&&onClick){
+     const idx=elements[0].index;
+     if(burdenView.type==="overview"){
+      pointer=!!(burdenTopItems[idx]&&burdenTopItems[idx].children&&burdenTopItems[idx].children.length);
+     }else if(burdenView.type==="category"){
+      const sub=burdenView.item.children[idx];
+      pointer=!!(sub&&sub.children&&sub.children.length);
+     }
+    }
+    e.native.target.style.cursor=pointer?"pointer":"default";
+   },
    plugins:{legend:{position:"bottom",labels:{color:"#e5e7eb",boxWidth:14,font:{size:12}}},
     tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(c.parsed)}（${(c.parsed/sum*100).toFixed(1)}%）`}}}}});
  el("burdenChartTotal").textContent=`${fmt(sum)}　/　月額 ${fmt(sum/12)}`;
- el("burdenRows").innerHTML=list.map(x=>`<tr><td>${x.n}</td><td>${(x.v/sum*100).toFixed(1)}%</td><td>${fmt(x.v)}</td><td>${fmt(x.v/12)}</td></tr>`).join("");
+}
+function showBurdenOverview(){
+ burdenView={type:"overview"};
+ if(el("backBurdenBtn"))el("backBurdenBtn").style.display="none";
+ if(el("burdenChartTitle"))el("burdenChartTitle").textContent="① 負担の内訳（何にいくら払っているか）";
+ if(el("burdenChartHint"))el("burdenChartHint").textContent="社会保険料の区切りをクリックすると、本人・会社負担や子ども・子育て支援金等の内訳に進めます。";
+ renderBurdenChartDoughnut(
+  burdenTopItems.map(x=>x.n),
+  burdenTopItems.map(x=>x.v),
+  burdenTopItems.map(x=>x.c),
+  idx=>{
+   const item=burdenTopItems[idx];
+   if(item&&item.children&&item.children.length){
+    showBurdenCategory(item);
+   }
+  }
+ );
+}
+function showBurdenCategory(item){
+ burdenView={type:"category",item};
+ if(el("backBurdenBtn"))el("backBurdenBtn").style.display="inline-block";
+ if(el("burdenChartTitle"))el("burdenChartTitle").textContent=`① 負担の内訳（${item.n||item.name} の内訳）`;
+ if(el("burdenChartHint"))el("burdenChartHint").textContent="← 負担別に戻る、または上のボタンを押して戻れます。";
+ renderBurdenChartDoughnut(
+  item.children.map(c=>c.name),
+  item.children.map(c=>c.v),
+  item.children.map(c=>c.color),
+  idx=>{
+   const sub=item.children[idx];
+   if(sub&&sub.children&&sub.children.length){
+    showBurdenCategory(sub);
+   }
+  }
+ );
 }
 function showOverview(){
  view={type:"overview",category:-1,child:-1};el("backBtn").style.display="none";
@@ -435,6 +486,7 @@ function calc(){
  const kouki=(age>=75&&employment!=="company")?calcKouki():null;
  let insurance=0,employerBurden=0,insuranceTotal=0,insuranceDetail=[];
  let premUse={pension:0,health:0,care:0,employment:0,support:0,contrib:0};
+ let personalDetail=[],employerDetail=[];
  if(employment==="company"){
   const monthly=Math.min(650000,Math.max(58000,income/12));
   const health=monthly*.04925,pension=monthly*.0915,emp=monthly*.0005,care=age>=40&&age<65?monthly*.0081:0;
@@ -452,20 +504,46 @@ function calc(){
    `子ども・子育て拠出金（児童手当等の財源）：会社負担 ${fmt(contrib*12)}`
   ];
   if(care)insuranceDetail.push(`介護保険：本人 ${fmt(care*12)}`);
+  personalDetail=[
+   {name:"健康保険（本人）",v:health*12,color:"#14b8a6"},
+   {name:"厚生年金（本人）",v:pension*12,color:"#2dd4bf"},
+   {name:"雇用保険（本人）",v:emp*12,color:"#5eead4"}
+  ];
+  if(care)personalDetail.push({name:"介護保険（本人）",v:care*12,color:"#0d9488"});
+  employerDetail=[
+   {name:"健康保険（会社）",v:health*12,color:"#0f766e"},
+   {name:"厚生年金（会社）",v:pension*12,color:"#115e59"},
+   {name:"雇用保険（会社）",v:monthly*.0085*12,color:"#134e4a"},
+   {name:"労災保険（会社）",v:monthly*.0025*12,color:"#042f2e"}
+  ];
  }else if(employment==="self"){
   const pension=(age>=60||age<20)?0:17920*12;
   const health=nHealthInput!==null?nHealthInput:(kouki?kouki.total:Math.max(0,income*.10));
   insurance=pension+health;insuranceTotal=insurance;premUse={pension,health,care:0,employment:0,support:0,contrib:0};
   insuranceDetail=[];
-  if(pension)insuranceDetail.push(`国民年金 ${fmt(pension)}`);
-  if(health)insuranceDetail.push(kouki&&nHealthInput===null?`後期高齢者医療保険料 ${fmt(health)}（全国平均の料率で概算）`:`国民健康保険 ${fmt(health)}`);
+  if(pension){
+   insuranceDetail.push(`国民年金 ${fmt(pension)}`);
+   personalDetail.push({name:"国民年金",v:pension,color:"#2dd4bf"});
+  }
+  if(health){
+   const hName=kouki&&nHealthInput===null?`後期高齢者医療保険料 ${fmt(health)}（全国平均の料率で概算）`:`国民健康保険 ${fmt(health)}`;
+   insuranceDetail.push(hName);
+   personalDetail.push({name:kouki&&nHealthInput===null?"後期高齢者医療保険料":"国民健康保険",v:health,color:"#14b8a6"});
+  }
  }else{
   const pension=age<20||age>=60?0:17920*12;
   const health=nHealthInput!==null?nHealthInput:(kouki?kouki.total:0);
   insurance=pension+health;insuranceTotal=insurance;premUse={pension,health,care:0,employment:0,support:0,contrib:0};
   insuranceDetail=[];
-  if(pension)insuranceDetail.push(`国民年金 ${fmt(pension)}（免除申請で0円になる可能性あり）`);
-  if(health)insuranceDetail.push(kouki&&nHealthInput===null?`後期高齢者医療保険料 ${fmt(health)}（全国平均の料率で概算）`:`国民健康保険 ${fmt(health)}`);
+  if(pension){
+   insuranceDetail.push(`国民年金 ${fmt(pension)}（免除申請で0円になる可能性あり）`);
+   personalDetail.push({name:"国民年金",v:pension,color:"#2dd4bf"});
+  }
+  if(health){
+   const hName=kouki&&nHealthInput===null?`後期高齢者医療保険料 ${fmt(health)}（全国平均の料率で概算）`:`国民健康保険 ${fmt(health)}`;
+   insuranceDetail.push(hName);
+   personalDetail.push({name:kouki&&nHealthInput===null?"後期高齢者医療保険料":"国民健康保険",v:health,color:"#14b8a6"});
+  }
   if(!kouki&&nHealthInput===null)insuranceDetail.push("国民健康保険料は自治体差が大きいため試算に含めていません。入力欄に年額を入れてください。");
  }
 
@@ -476,6 +554,7 @@ function calc(){
   const c1=calcCare1();
   insurance+=c1.amount;insuranceTotal+=c1.amount;premUse.care+=c1.amount;
   insuranceDetail.push(`介護保険料（第1号）：${fmt(c1.amount)}（全国平均の基準額×乗率${c1.rate}。単身世帯の想定）`);
+  personalDetail.push({name:"介護保険料（第1号）",v:c1.amount,color:"#0d9488"});
  }
 
  // 令和8年分の基礎控除（合計所得金額に応じて）
@@ -556,11 +635,80 @@ function calc(){
  const benefits=pensionIncome+childBenefit+welfareAmount;
  const grossBurden=totalBurden+employerBurden; // 本人負担＋雇用主負担
  const net=benefits-grossBurden; // 収入は含めず、負担と給付のみ
- renderBurdenChart([
-  {n:"所得税",v:incomeTax,c:"#38bdf8"},{n:"住民税",v:residentTax,c:"#a78bfa"},
-  {n:"社会保険料（本人）",v:insurance,c:"#34d399"},{n:"社会保険料（雇用主）",v:employerBurden,c:"#10b981"},
-  {n:"消費税",v:consumptionTax,c:"#facc15"},{n:"ガソリン税",v:gasolineTax,c:"#fb923c"},
-  {n:"自動車税・重量税",v:carTax,c:"#f472b6"},{n:"たばこ関係税",v:tobaccoTax,c:"#94a3b8"}]);
+ const pct=v=>grossBurden>0?(v/grossBurden*100).toFixed(1)+"%":"0.0%";
+ const supportTotal = premUse.support;
+ const contribTotal = premUse.contrib;
+ const supportPersonal = (employment === "company" ? supportTotal / 2 : supportTotal);
+ const supportEmployer = (employment === "company" ? supportTotal / 2 : 0);
+ const purePersonal = Math.max(0, insurance - supportPersonal);
+ const pureEmployer = Math.max(0, employerBurden - supportEmployer - contribTotal);
+
+ const insuranceSubItems=[];
+ if(purePersonal>0.5){
+  insuranceSubItems.push({
+   name:"社会保険料（本人負担）",
+   v:purePersonal,
+   color:"#34d399",
+   children:personalDetail.filter(x=>x.v>0.5)
+  });
+ }
+ if(pureEmployer>0.5){
+  insuranceSubItems.push({
+   name:"社会保険料（雇用主負担）",
+   v:pureEmployer,
+   color:"#10b981",
+   children:employerDetail.filter(x=>x.v>0.5)
+  });
+ }
+ if(supportTotal>0.5){
+  const sChildren=[];
+  if(supportPersonal>0.5)sChildren.push({name:"うち本人負担",v:supportPersonal,color:"#bef264"});
+  if(supportEmployer>0.5)sChildren.push({name:"うち会社負担",v:supportEmployer,color:"#a3e635"});
+  insuranceSubItems.push({
+   name:"子ども・子育て支援金",
+   v:supportTotal,
+   color:"#a3e635",
+   children:sChildren
+  });
+ }
+ if(contribTotal>0.5){
+  insuranceSubItems.push({
+   name:"子ども・子育て拠出金（雇用主負担）",
+   v:contribTotal,
+   color:"#84cc16",
+   children:[]
+  });
+ }
+ burdenTopItems=[
+  {n:"所得税",v:incomeTax,c:"#38bdf8"},
+  {n:"住民税",v:residentTax,c:"#a78bfa"},
+  {n:"社会保険料",v:insuranceTotal,c:"#10b981",children:insuranceSubItems},
+  {n:"消費税",v:consumptionTax,c:"#facc15"},
+  {n:"ガソリン税",v:gasolineTax,c:"#fb923c"},
+  {n:"自動車税・重量税",v:carTax,c:"#f472b6"},
+  {n:"たばこ関係税",v:tobaccoTax,c:"#94a3b8"}
+ ].filter(x=>x.v>0.5);
+ showBurdenOverview();
+
+ const bRows=el("burdenRows");bRows.innerHTML="";
+ burdenTopItems.forEach((x,i)=>{
+  if(x.children&&x.children.length){
+   const rowId="burden-cat-"+i;
+   bRows.insertAdjacentHTML("beforeend",`<tr class="cat" data-target="${rowId}"><td><span class="arrow">▶</span>${x.n}</td><td>${pct(x.v)}</td><td><b>${fmt(x.v)}</b></td><td>${fmt(x.v/12)}</td></tr>`);
+   x.children.forEach((c,j)=>{
+    const childId=`${rowId}-${j}`;
+    const hasGrand=c.children&&c.children.length;
+    bRows.insertAdjacentHTML("beforeend",`<tr class="child hidden ${hasGrand?"cat":""}" data-parent="${rowId}" ${hasGrand?`data-target="${childId}"`:""}><td>${hasGrand?`<span class="arrow">▶</span>`:""}${c.name}</td><td>${pct(c.v)}</td><td>${fmt(c.v)}</td><td>${fmt(c.v/12)}</td></tr>`);
+    if(hasGrand){
+     c.children.forEach(g=>{
+      bRows.insertAdjacentHTML("beforeend",`<tr class="grand hidden" data-parent="${childId}"><td>${g.name}</td><td>${pct(g.v)}</td><td>${fmt(g.v)}</td><td>${fmt(g.v/12)}</td></tr>`);
+     });
+    }
+   });
+  }else{
+   bRows.insertAdjacentHTML("beforeend",`<tr><td>${x.n}</td><td>${pct(x.v)}</td><td>${fmt(x.v)}</td><td>${fmt(x.v/12)}</td></tr>`);
+  }
+ });
  const wScale=annualLifeAssist>0?welfareAmount/annualLifeAssist:0;
  renderBenefitChart([
   {n:"年金",v:pensionIncome,c:"#38bdf8"},{n:"児童手当",v:childBenefit,c:"#a78bfa"},
@@ -625,7 +773,6 @@ function calc(){
    children:insChildren
   });
  }
- const pct=v=>grossBurden>0?(v/grossBurden*100).toFixed(1)+"%":"0.0%";
  const rows=el("rows");rows.innerHTML="";
  budget.forEach((b,i)=>{
   const u=userTotals[i],rowId="cat-"+i;
@@ -666,8 +813,16 @@ function calc(){
    const parentId=tr.dataset.target,childrenRows=document.querySelectorAll(`tr[data-parent="${parentId}"]`);
    if(!childrenRows.length)return;
    const isOpen=!childrenRows[0].classList.contains("hidden");
-   childrenRows.forEach(c=>{c.classList.toggle("hidden",isOpen);
-    if(isOpen){const childId=c.dataset.target;if(childId)document.querySelectorAll(`tr[data-parent="${childId}"]`).forEach(g=>g.classList.add("hidden"));}});
+   childrenRows.forEach(c=>{
+    c.classList.toggle("hidden",isOpen);
+    if(isOpen){
+     const childId=c.dataset.target;
+     if(childId){
+      document.querySelectorAll(`tr[data-parent="${childId}"]`).forEach(g=>g.classList.add("hidden"));
+      const cArrow=c.querySelector(".arrow");if(cArrow)cArrow.textContent="▶";
+     }
+    }
+   });
    const arrow=tr.querySelector(".arrow");if(arrow)arrow.textContent=isOpen?"▶":"▼";
   });
  });
@@ -675,6 +830,7 @@ function calc(){
 }
 el("preset").addEventListener("change",applyPreset);
 el("backBtn").addEventListener("click",showOverview);
+el("backBurdenBtn").addEventListener("click",showBurdenOverview);
 el("calc").addEventListener("click",calc);
 el("income").addEventListener("keydown",e=>{if(e.key==="Enter")calc()});
 applyPreset();
