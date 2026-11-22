@@ -112,6 +112,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <option value="company">会社員・公務員</option>
 <option value="self">個人事業主・フリーランス</option>
 <option value="none">無職・失業中</option></select></div>
+<div><label>国民年金の区分（厚生年金に未加入の場合）</label><select id="pensionCategory"><option value="first">第1号（本人が納付）</option><option value="third">第3号（厚生年金加入者に扶養される配偶者）</option></select></div>
 <div><label>必要経費率（個人事業主）</label><input id="expenseRate" type="number" min="0" max="95" step="1" value="55"></div>
 <div><label>住む地域の級地</label><select id="areaClass">
 <option value="1-1">1級地-1（東京23区等・都市部）</option>
@@ -258,7 +259,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <li><b>住民税</b>（令和8年中の所得に対する令和9年度分の制度。実際の納付は翌年）：（所得 − 基礎控除43万円 − 社会保険料 − 配偶者控除33万円 − 扶養控除（16〜18歳33万円、19〜22歳45万円））×10% − 調整控除（人的控除の差×5%）＋均等割5,000円＋森林環境税1,000円。非課税限度額（1級地。単身は合計所得45万円、扶養親族がいれば人数に応じて増加）以下なら0円です。同一生計配偶者・扶養親族の所得要件は合計所得62万円以下です。</li>
 <li><b>ふるさと納税</b>（「フルに使う」を選んだとき）：控除上限額 ＝ 住民税の所得割額×20% ÷（90% − 所得税の税率×1.021）＋2,000円（千円未満切り捨て、総所得金額等の40%まで）を寄附します。所得税は（寄附額 − 2,000円）×税率×1.021、住民税は（寄附額 − 2,000円）×10%＋特例分（上限は所得割額の20%）が減ります。寄附額から返礼品相当（3割）を除いた額（寄附額の7割）を負担として計上し、返礼品は給付に含めません。</li>
 <li><b>社会保険料（会社員）</b>：標準報酬月額を年収÷12（下限5.8万円・上限65万円）で近似し、健康保険9.85%・厚生年金18.3%・介護1.62%（40〜64歳）・子ども・子育て支援金0.23%を労使で折半。雇用保険は本人0.5%・会社0.85%、労災は会社0.25%、子ども・子育て拠出金0.36%は会社のみ負担。</li>
-<li><b>社会保険料（個人事業主・無職）</b>：国民年金は月17,920円（20〜59歳のみ）。国民健康保険料は入力値を優先し、空欄なら横浜市の令和8年度の料率（所得割＝（所得 − 43万円）×医療8.33%＋支援2.62%＋子ども0.34%、40〜64歳は介護2.84%を加算。均等割は医療40,870円・支援13,380円・子ども1,770円、介護16,200円。賦課限度額あり。所得に応じて均等割を7割・5割・2割軽減）で概算します。単身世帯（加入者1人）を想定しています。生活保護を受ける場合は、国民年金を法定免除、国保・後期高齢者医療を不要として扱います。</li>
+<li><b>社会保険料（個人事業主・無職）</b>：国民年金は第1号を選んだ20〜59歳の方に月17,920円で計上します。第3号を選んだ場合は本人の国民年金保険料を計上しません。国民健康保険料は入力値を優先し、空欄なら横浜市の令和8年度の料率（所得割＝（所得 − 43万円）×医療8.33%＋支援2.62%＋子ども0.34%、40〜64歳は介護2.84%を加算。均等割は医療40,870円・支援13,380円・子ども1,770円、介護16,200円。賦課限度額あり。所得に応じて均等割を7割・5割・2割軽減）で概算します。単身世帯（加入者1人）を想定しています。生活保護を受ける場合は、国民年金を法定免除、国保・後期高齢者医療を不要として扱います。</li>
 <li><b>後期高齢者医療（75歳以上）</b>：全国平均の料率で、均等割56,083円＋所得割10.17%×（所得 − 43万円）に、子ども分（均等割1,351円＋所得割0.25%）を加算します。所得が低い場合は均等割を7割・5割・2割軽減します。</li>
 <li><b>介護保険料（65歳以上・第1号）</b>：第9期の全国平均基準額（月6,225円）×所得段階の乗率（0.285〜2.4）。年金の天引きで、単身世帯を想定します。</li>
 <li><b>消費税</b>：食費等×8%＋その他×10%。そのうち22%（2.2/10）を地方消費税として扱います。</li>
@@ -294,6 +295,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <tr><td>児童手当</td><td>3歳未満1.5万円、3歳〜高校生年代1万円、第3子以降3万円</td><td><a href="https://www.pref.kanagawa.jp/docs/he8/faq/p3135.html" target="_blank" rel="noopener">神奈川県 児童手当の制度（こども家庭庁の制度の案内）</a></td></tr>
 <tr><td>生活扶助の基準額</td><td>第1類・第2類の基準額（令和7年10月）、特例加算は令和8年10月から月2,500円</td><td><a href="https://www.mhlw.go.jp/content/001152601.pdf" target="_blank" rel="noopener">厚生労働省 生活扶助基準額の算出方法（PDF）</a><br><a href="https://www.mhlw.go.jp/content/12002000/001662704.pdf" target="_blank" rel="noopener">令和8年度生活扶助基準の見直し（PDF）</a></td></tr>
 <tr><td>国民年金保険料</td><td>月17,920円（令和8年度）</td><td><a href="https://www.nenkin.go.jp/service/kokunen/hokenryo/hokenryo.html" target="_blank" rel="noopener">日本年金機構 国民年金保険料</a></td></tr>
+<tr><td>第3号被保険者の保険料</td><td>厚生年金加入者に扶養される配偶者は、本人の国民年金保険料の個別納付なし</td><td><a href="https://www.nenkin.go.jp/service/mokutekibetsu/kojin/harau/index.html" target="_blank" rel="noopener">日本年金機構 保険料を払う</a></td></tr>
 <tr><td>ガソリン税</td><td>ガソリン税28.7円/L＋石油石炭税2.8円/L（暫定税率25.1円は令和7年12月31日に廃止）</td><td><a href="https://www.enecho.meti.go.jp/about/special/johoteikyo/zanteizeiritsu.html" target="_blank" rel="noopener">資源エネルギー庁 ガソリン暫定税率の廃止</a><br><a href="https://selectra.jp/energy/gasoline/tax" target="_blank" rel="noopener">税額の内訳（参考：民間サイト）</a></td></tr>
 <tr><td>ふるさと納税</td><td>控除額＝（寄附額 − 2,000円）に対し、所得税は所得控除、住民税は基本分10%＋特例分（所得割額の20%まで）。返礼割合は3割以下</td><td><a href="https://www.soumu.go.jp/main_sosiki/jichi_zeisei/czaisei/czaisei_seido/furusato/mechanism/deduction.html" target="_blank" rel="noopener">総務省 ふるさと納税のしくみ（控除額の計算）</a><br><a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1155.htm" target="_blank" rel="noopener">国税庁 No.1155 ふるさと納税</a><br><a href="https://www.city.takayama.lg.jp/_res/projects/default_project/_page_/001/010/858/010208_gi47gou-siryou.pdf" target="_blank" rel="noopener">返礼割合3割以下の基準（自治体の資料・PDF）</a></td></tr>
 <tr><td>住民税</td><td>令和9年度分：所得割10%（標準税率）、均等割5,000円＋森林環境税1,000円、基礎控除43万円、給与所得控除の最低額74万円、扶養・配偶者の所得要件62万円、非課税限度額45万円（単身）、調整控除の基礎控除の差5万円</td><td><a href="https://www.city.edogawa.tokyo.jp/e013/kurashi/zeikin/juminzei/r9kaisei.html" target="_blank" rel="noopener">江戸川区 令和9年度分住民税から適用されるもの</a><br><a href="https://www.cao.go.jp/zei-cho/content/8life4kai2.pdf" target="_blank" rel="noopener">総務省 個人住民税の資料（PDF）</a><br><a href="https://www.nishi.or.jp/kurashi/shizei/kojinshiminzei/kisotishiki/juminshotoku-sa.html" target="_blank" rel="noopener">住民税と所得税の人的控除額の差</a></td></tr>
@@ -361,7 +363,7 @@ const presets={
  company_single:{age:35,income:5000000,employment:"company",expenseRate:55,areaClass:"1-1",spouse:"none",childrenCount:0,childrenAges:"",rent:100000,assets:1000000,nationalHealth:"",disability:"no",foodSpend:600000,otherSpend:900000,gasLiters:600,engineCc:1500,weightTax:0,tobaccoSpend:0},
  company_married:{age:38,income:6000000,employment:"company",expenseRate:55,areaClass:"1-1",spouse:"dependent",childrenCount:0,childrenAges:"",rent:130000,assets:2000000,nationalHealth:"",disability:"no",foodSpend:800000,otherSpend:1200000,gasLiters:800,engineCc:1800,weightTax:0,tobaccoSpend:0},
  company_children:{age:38,income:7000000,employment:"company",expenseRate:55,areaClass:"1-1",spouse:"dependent",childrenCount:2,childrenAges:"3,7",rent:150000,assets:3000000,nationalHealth:"",disability:"no",foodSpend:1000000,otherSpend:1400000,gasLiters:900,engineCc:1800,weightTax:0,tobaccoSpend:0},
- housewife:{age:38,income:0,employment:"none",expenseRate:55,areaClass:"1-1",spouse:"income",childrenCount:0,childrenAges:"",rent:130000,assets:2000000,nationalHealth:"",disability:"no",foodSpend:700000,otherSpend:800000,gasLiters:400,engineCc:1500,weightTax:0,tobaccoSpend:0},
+ housewife:{age:38,income:0,employment:"none",pensionCategory:"third",expenseRate:55,areaClass:"1-1",spouse:"income",childrenCount:0,childrenAges:"",rent:130000,assets:2000000,nationalHealth:0,disability:"no",foodSpend:700000,otherSpend:800000,gasLiters:400,engineCc:1500,weightTax:0,tobaccoSpend:0},
  parttime:{age:30,income:1200000,employment:"company",expenseRate:55,areaClass:"1-1",spouse:"none",childrenCount:0,childrenAges:"",rent:80000,assets:500000,nationalHealth:"",disability:"no",foodSpend:400000,otherSpend:500000,gasLiters:300,engineCc:0,weightTax:0,tobaccoSpend:0},
  freelancer:{age:35,income:5000000,employment:"self",expenseRate:55,areaClass:"1-1",spouse:"none",childrenCount:0,childrenAges:"",rent:100000,assets:1000000,nationalHealth:"",disability:"no",foodSpend:600000,otherSpend:900000,gasLiters:600,engineCc:1500,weightTax:0,tobaccoSpend:0},
  pensioner:{age:70,income:0,pensionIncome:2400000,employment:"none",expenseRate:55,areaClass:"1-1",spouse:"none",childrenCount:0,childrenAges:"",rent:80000,assets:3000000,nationalHealth:"",disability:"no",foodSpend:500000,otherSpend:600000,gasLiters:300,engineCc:1500,weightTax:0,tobaccoSpend:0},
@@ -371,7 +373,7 @@ const presets={
 };
 function applyPreset(){
  const p=presets[el("preset").value];
- el("age").value=p.age;el("income").value=p.income;el("pensionIncome").value=p.pensionIncome||0;el("employment").value=p.employment;
+ el("age").value=p.age;el("income").value=p.income;el("pensionIncome").value=p.pensionIncome||0;el("employment").value=p.employment;el("pensionCategory").value=p.pensionCategory||"first";
  el("expenseRate").value=p.expenseRate;el("areaClass").value=p.areaClass;el("spouse").value=p.spouse;el("spouseIncome").value=p.spouseIncome||1000000;
  el("childrenCount").value=p.childrenCount;el("childrenAges").value=p.childrenAges;
  el("rent").value=p.rent;el("assets").value=p.assets;el("nationalHealth").value=p.nationalHealth;el("disability").value=p.disability;
@@ -522,7 +524,7 @@ function calc(){
  const age=+el("age").value||0,income=Math.max(0,+el("income").value||0);
  const includeEmployer=el("includeEmployerBurden").checked;
  const pensionIncome=Math.max(0,+el("pensionIncome").value||0);
- const employment=el("employment").value,expenseRate=(+el("expenseRate").value||0)/100;
+ const employment=el("employment").value,pensionCategory=el("pensionCategory").value,expenseRate=(+el("expenseRate").value||0)/100;
  const area=el("areaClass").value,spouse=el("spouse").value;
  const rent=Math.max(0,+el("rent").value||0),assets=Math.max(0,+el("assets").value||0);
  const nHealthInput=el("nationalHealth").value===""?null:Math.max(0,+el("nationalHealth").value||0);
@@ -649,7 +651,7 @@ function calc(){
   }
   if(onWelfare&&nHealthInput===null)insuranceDetail.push("生活保護を受ける場合は、医療保険の保険料は不要で、国民年金保険料は法定免除となります（試算から除外）。");
  }else{
-  const pension=(onWelfare||age<20||age>=60)?0:17920*12;
+  const pension=(onWelfare||age<20||age>=60||pensionCategory==="third")?0:17920*12;
   const health=nHealthInput!==null?nHealthInput:(medEst?medEst.total:0);
   insurance=pension+health;insuranceTotal=insurance;premUse={pension,health,care:0,employment:0,support:0,contrib:0};
   insuranceDetail=[];
@@ -657,6 +659,7 @@ function calc(){
    insuranceDetail.push(`国民年金 ${fmt(pension)}（免除申請で0円になる可能性あり）`);
    personalDetail.push({name:"国民年金",v:pension,color:"#2dd4bf"});
   }
+  else if(pensionCategory==="third"&&age>=20&&age<60&&!onWelfare)insuranceDetail.push("国民年金第3号被保険者：本人が個別に保険料を納める必要はありません（厚生年金加入者に扶養される配偶者の想定）。");
   if(health){
    insuranceDetail.push(nHealthInput===null?`${medLabel} ${fmt(health)}`:`国民健康保険 ${fmt(health)}`);
    personalDetail.push({name:kouki&&nHealthInput===null?"後期高齢者医療保険料":"国民健康保険",v:health,color:"#14b8a6"});
@@ -1111,15 +1114,20 @@ function setDetailPanel(show){
 }
 function renderPurposeDetail(ex,detail){
  if(ex.name==="年金"){
-  if(employment==="company"){
-   detail={title:"厚生年金保険料の流れ",note:"厚生年金全体の支出49.7兆円のうち、給付費29.7兆円（約6割）、基礎年金拠出金19.7兆円（約4割）です。厚生年金保険料（本人・会社負担分を含む）の流れをこの比率で示した概算です。基礎年金の財源は、国民年金・厚生年金の加入者が納める基礎年金拠出金と国庫負担（税）で、国庫負担は2分の1です。",
-    items:[{n:"厚生年金の給付費（約6割）",v:29.7,c:"#34d399"},{n:"基礎年金拠出金（約4割）",v:19.7,c:"#38bdf8"}]};
-  }else if(employment==="self"){
-   detail={title:"国民年金保険料の流れ",note:"自営業など国民年金の第1号被保険者が納める保険料は、基礎年金の財源の一部と国民年金の独自給付に使われます。基礎年金の財源は保険料だけでなく、半分を国庫（税）が負担します。グラフは令和6年度の公的年金給付費の内訳を参考にしたイメージです。",
-    items:[{n:"基礎年金（老齢・障害・遺族）",v:254805,c:"#38bdf8"},{n:"国民年金の独自給付（付加年金・死亡一時金等）",v:1760,c:"#facc15"}]};
+  const employmentType=el("employment").value;
+  const pensionPremium=ex.children?.find(c=>c.name.includes("年金保険料"))?.v||0;
+  const generalFunding=ex.children?.find(c=>c.name.startsWith("一般財源"))?.v||0;
+  if(employmentType==="company"){
+   const employeesBenefit=pensionPremium*29.7/49.4,basicContribution=pensionPremium*19.7/49.4;
+   detail={title:"厚生年金保険料の流れ",note:"会社員・公務員、および勤務先で厚生年金に加入しているパート・アルバイト向けの概算です。厚生年金の支出額をもとに、保険料分を給付費約6割・基礎年金拠出金約4割に按分しています。基礎年金には、保険料分に年金費目へ配分した一般財源も加えて表示しています。",
+    items:[{n:"厚生年金の給付費（保険料の約6割）",v:employeesBenefit,c:"#34d399"},{n:"基礎年金（保険料分＋一般財源）",v:basicContribution+generalFunding,c:"#38bdf8"}]};
+  }else if(employmentType==="self"||pensionPremium>0.5){
+   const basicPremium=pensionPremium*254805/(254805+1760),independentPremium=pensionPremium*1760/(254805+1760);
+   detail={title:"国民年金保険料の流れ",note:"国民年金保険料分は、令和6年度の給付費内訳を参考に基礎年金と国民年金の独自給付へ概算配分しています。基礎年金には保険料分と年金費目へ配分した一般財源を合わせて表示しています。",
+    items:[{n:"基礎年金（保険料分＋一般財源）",v:basicPremium+generalFunding,c:"#38bdf8"},{n:"国民年金の独自給付（保険料分）",v:independentPremium,c:"#facc15"}]};
   }else{
-   detail={title:"公的年金の給付内訳",note:"加入している年金制度を選択していないため、右は公的年金の給付費の内訳を表示します。基礎年金の財源は、保険料と国庫負担（税）が2分の1ずつです。",
-    items:[{n:"基礎年金（老齢・障害・遺族）",v:254805,c:"#38bdf8"},{n:"厚生年金（報酬比例の老齢・障害・遺族）",v:296836,c:"#34d399"},{n:"国民年金の独自給付（付加年金・死亡一時金等）",v:1760,c:"#facc15"}]};
+   detail={title:"年金費目に配分された公費",note:"この条件では現在の年金保険料負担を計上していません。年金費目に配分された一般財源を、基礎年金の公費分として表示した概算です。本人の過去の加入制度や給付費の種類別内訳を示すものではありません。",
+    items:[{n:"基礎年金（一般財源分・概算）",v:generalFunding,c:"#7dd3fc"}]};
   }
  }
  const total=ex.v,items=detail.items,sourceTotal=items.reduce((sum,item)=>sum+item.v,0);
