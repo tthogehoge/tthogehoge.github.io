@@ -865,11 +865,17 @@ function calc(){
  if(genHealth2>0.5)purposeItems.push({name:"保健衛生",v:genHealth2,color:"#bae6fd",children:[
   {name:"一般財源（保健衛生対策費）",v:genHealth2,color:"#7dd3fc"}
  ]});
- // ⑧ 地方交付税等
- {const u=userTotals[2];if(u>0.5)purposeItems.push({name:"地方交付税等（地方への配分）",v:u,color:"#facc15",children:[
-  {name:"一般財源（地方交付税交付金等）",v:u,color:"#fde047"}
- ]});}
- // ⑨ 国債費
+ // ⑧ 地方自治体の歳出（地方交付税＋地方税をまとめる）
+ {
+  const kyofuTax=userTotals[2];
+  const localTotal=kyofuTax+localTax;
+  if(localTotal>0.5){
+   const children=[];
+   if(kyofuTax>0.5)children.push({name:"一般財源からの地方交付税交付金等",v:kyofuTax,color:"#fde047"});
+   if(localTax>0.5)children.push({name:"地方税（住民税・地方消費税・自動車税）",v:localTax,color:"#fcd34d"});
+   purposeItems.push({name:"地方自治体の歳出",v:localTotal,color:"#f59e0b",children});
+  }
+ } // ⑨ 国債費
  {const u=userTotals[1];if(u>0.5)purposeItems.push({name:"国債費（元本償還・利払い）",v:u,color:"#f472b6",children:[
   {name:"一般財源（国債費）",v:u,color:"#fb7185"}
  ]});}
@@ -889,10 +895,6 @@ function calc(){
  {const u=userTotals[6];if(u>0.5)purposeItems.push({name:"その他の歳出",v:u,color:"#94a3b8",children:[
   {name:"一般財源（その他の事項経費等）",v:u,color:"#cbd5e1"}
  ]});}
- // ⑭ 地方税
- if(localTax>0.5)purposeItems.push({name:"地方税（住民税・地方消費税・自動車税）",v:localTax,color:"#f59e0b",children:[
-  {name:"地方自治体の歳出",v:localTax,color:"#fcd34d"}
- ]});
  // ⑮ 復興特別所得税
  if(reconstructionTax>0.5)purposeItems.push({name:"復興特別所得税",v:reconstructionTax,color:"#fb7185",children:[
   {name:"東日本大震災の復興財源",v:reconstructionTax,color:"#fda4af"}
