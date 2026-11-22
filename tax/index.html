@@ -70,19 +70,15 @@ tfoot tr.sub td:first-child{padding-left:28px}
 .hidden{display:none}
 .badge{display:inline-block;font-size:11px;padding:2px 7px;border-radius:99px;background:#1e293b;color:#93c5fd;margin-left:6px}
 .result{border-left:4px solid var(--accent);padding-left:12px}
+.share-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:10px;align-items:start}
+.share-controls input{min-width:0}
+.share-controls button{width:auto;margin:0;padding:10px 16px}
 </style>
 </head>
 <body>
 <div class="wrap">
 <h1>生活パターンから見る税金と給付</h1>
 <p class="lead">このページはChart.jsを含む単一のHTMLファイルで動作し、保存したファイルをブラウザーで開けば、インターネット接続なしでも試算とグラフ表示ができます。生活パターンのプリセットを選び、年収・世帯・消費・自動車などの条件を入力して、税・社会保険料・給付を概算します。</p>
-
-<div class="card">
-<h2>入力条件を共有</h2>
-<p class="small">現在の入力項目を含むリンクを作成します。リンクを開くと同じ条件を復元できます。</p>
-<button id="makeShareLink" type="button">入力内容を含むリンクを作成</button>
-<input id="shareLink" type="url" readonly aria-label="入力内容を含む共有リンク" class="hidden">
-</div>
 
 <div class="card">
 <h2>生活パターン</h2>
@@ -134,6 +130,11 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <div><label>NHK受信料</label><select id="nhk"><option value="none">なし・免除</option><option value="chijo">地上契約（月1,100円・年13,200円）</option><option value="eisei" selected>衛星契約（月1,950円・年23,400円）</option></select></div>
 </div>
 <button id="calc">税金・社会保険料・給付を試算する</button>
+<div class="share-controls">
+<input id="shareLink" type="url" readonly aria-label="入力内容を含む共有リンク" placeholder="入力条件のリンク" title="入力値がURLに含まれます">
+<button id="copyShareLink" type="button">コピー</button>
+</div>
+<p class="small" id="shareStatus" aria-live="polite">入力条件を含むリンクです。共有時は入力内容にご注意ください。</p>
 <p class="small">※消費税は食費等を8％、その他を10％で概算します。ガソリン税は揮発油税・地方揮発油税28.7円/Lと石油石炭税2.8円/Lの合計31.5円/L（ガソリンの暫定税率は令和7年12月31日に廃止）、自動車税は排気量別の年額目安、たばこは購入額の約63.5％を税・特別税等として概算します。実際は燃料種別・車種・自治体・商品により異なります。</p>
 </div>
 
@@ -994,6 +995,14 @@ el("calc").addEventListener("click",calc);
 el("income").addEventListener("keydown",e=>{if(e.key==="Enter")calc()});
 applyPreset();
 const shareableInputs=[...document.querySelectorAll(".wrap input[id], .wrap select[id]")].filter(input=>input.id!=="shareLink");
+function refreshShareLink(){
+ const url=new URL(window.location.href);
+ url.search="";
+ url.hash="";
+ url.searchParams.set("share","1");
+ shareableInputs.forEach(input=>url.searchParams.set(input.id,input.value));
+ el("shareLink").value=url.toString();
+}
 const incomingParams=new URLSearchParams(window.location.search);
 if(incomingParams.get("share")==="1"){
  shareableInputs.forEach(input=>{
@@ -1001,18 +1010,22 @@ if(incomingParams.get("share")==="1"){
  });
  calc();
 }
-el("makeShareLink").addEventListener("click",()=>{
- const url=new URL(window.location.href);
- url.search="";
- url.hash="";
- url.searchParams.set("share","1");
- shareableInputs.forEach(input=>url.searchParams.set(input.id,input.value));
- const field=el("shareLink");
- field.value=url.toString();
- field.classList.remove("hidden");
- field.focus();
- field.select();
+shareableInputs.forEach(input=>{
+ input.addEventListener("input",refreshShareLink);
+ input.addEventListener("change",refreshShareLink);
 });
+el("copyShareLink").addEventListener("click",async()=>{
+ const field=el("shareLink");
+ try{
+  await navigator.clipboard.writeText(field.value);
+  el("shareStatus").textContent="リンクをコピーしました。";
+ }catch{
+  field.focus();field.select();
+  el("shareStatus").textContent="URLを選択しました。コピーしてください。";
+ }
+});
+el("preset").addEventListener("change",refreshShareLink);
+refreshShareLink();
 </script>
 </body>
 </html>
