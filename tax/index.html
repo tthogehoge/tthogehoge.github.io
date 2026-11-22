@@ -865,14 +865,15 @@ function calc(){
  if(genHealth2>0.5)purposeItems.push({name:"保健衛生",v:genHealth2,color:"#bae6fd",children:[
   {name:"一般財源（保健衛生対策費）",v:genHealth2,color:"#7dd3fc"}
  ]});
- // ⑧ 地方自治体の歳出（地方交付税＋地方税をまとめる）
+ // ⑧ 地方自治体の歳出（地方交付税＋地方税＋ふるさと納税をまとめる）
  {
   const kyofuTax=userTotals[2];
-  const localTotal=kyofuTax+localTax;
+  const localTotal=kyofuTax+localTax+furusatoNet;
   if(localTotal>0.5){
    const children=[];
    if(kyofuTax>0.5)children.push({name:"一般財源からの地方交付税交付金等",v:kyofuTax,color:"#fde047"});
    if(localTax>0.5)children.push({name:"地方税（住民税・地方消費税・自動車税）",v:localTax,color:"#fcd34d"});
+   if(furusatoNet>0.5)children.push({name:"ふるさと納税（返礼品相当を除く）",v:furusatoNet,color:"#f9a8d4"});
    purposeItems.push({name:"地方自治体の歳出",v:localTotal,color:"#f59e0b",children});
   }
  } // ⑨ 国債費
@@ -896,13 +897,6 @@ function calc(){
   {name:"一般財源（その他の事項経費等）",v:u,color:"#cbd5e1"}
  ]});}
  // ⑮ 復興特別所得税
- if(reconstructionTax>0.5)purposeItems.push({name:"復興特別所得税",v:reconstructionTax,color:"#fb7185",children:[
-  {name:"東日本大震災の復興財源",v:reconstructionTax,color:"#fda4af"}
- ]});
- // ⑯ ふるさと納税
- if(furusatoNet>0.5)purposeItems.push({name:"ふるさと納税（返礼品相当を除く）",v:furusatoNet,color:"#f9a8d4",children:[
-  {name:"寄附先自治体の事業",v:furusatoNet,color:"#fbcfe8"}
- ]});
 
  // グラフ用 extraItems は使途ベース統合のまま（グラフは purposeItems で描画）
  extraItems=purposeItems;
