@@ -186,7 +186,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <tbody id="burdenRows"></tbody>
 <tfoot id="burdenFoot"></tfoot>
 </table>
-<p class="small">行をクリックすると所得税・住民税・消費税・ガソリン税・自動車関係税・社会保険料などを展開できます。社会保険料は本人負担・雇用主負担から、保険の種類まで確認できます。0円の項目は表示しません。</p>
+<p class="small">行をクリックすると所得税・住民税・消費税・ガソリン税・自動車関係税・社会保険料などを展開できます。社会保険料は健康保険・厚生年金・雇用保険などの種類ごとに分け、さらに本人負担・雇用主負担を確認できます。0円の項目は表示しません。</p>
 </div>
 
 <div class="card">
@@ -609,9 +609,9 @@ function calc(){
   const health=monthly*.04925,pension=monthly*.0915,emp=monthly*.0005,care=age>=40&&age<65?monthly*.0081:0;
   const support=monthly*.00115,contrib=monthly*.0036; // 子ども・子育て支援金0.23%（労使折半）／拠出金0.36%（雇用主のみ）
   insurance=(health+pension+emp+care+support)*12;
-  employerBurden=(health+pension+monthly*.0085+monthly*.0025+support+contrib)*12;
+  employerBurden=(health+pension+care+monthly*.0085+monthly*.0025+support+contrib)*12;
   insuranceTotal=insurance+(includeEmployer?employerBurden:0);
-  premUse={pension:pension*(includeEmployer?24:12),health:health*(includeEmployer?24:12),care:care*12,employment:(emp+(includeEmployer?monthly*.0085+monthly*.0025:0))*12,support:support*(includeEmployer?24:12),contrib:includeEmployer?contrib*12:0};
+  premUse={pension:pension*(includeEmployer?24:12),health:health*(includeEmployer?24:12),care:care*(includeEmployer?24:12),employment:(emp+(includeEmployer?monthly*.0085+monthly*.0025:0))*12,support:support*(includeEmployer?24:12),contrib:includeEmployer?contrib*12:0};
   insuranceDetail=[
    `健康保険：本人 ${fmt(health*12)}／会社 ${fmt(health*12)}`,
    `厚生年金：本人 ${fmt(pension*12)}／会社 ${fmt(pension*12)}`,
@@ -620,7 +620,7 @@ function calc(){
    `子ども・子育て支援金：本人 ${fmt(support*12)}／会社 ${fmt(support*12)}`,
    `子ども・子育て拠出金（児童手当等の財源）：会社負担 ${fmt(contrib*12)}`
   ];
-  if(care)insuranceDetail.push(`介護保険：本人 ${fmt(care*12)}`);
+  if(care)insuranceDetail.push(`介護保険：本人 ${fmt(care*12)}／会社 ${fmt(care*12)}`);
   personalDetail=[
    {name:"健康保険（本人）",v:health*12,color:"#14b8a6"},
    {name:"厚生年金（本人）",v:pension*12,color:"#2dd4bf"},
@@ -633,6 +633,7 @@ function calc(){
    {name:"雇用保険（会社）",v:monthly*.0085*12,color:"#134e4a"},
    {name:"労災保険（会社）",v:monthly*.0025*12,color:"#042f2e"}
   ];
+  if(care)employerDetail.push({name:"介護保険（会社）",v:care*12,color:"#0f766e"});
  }else if(employment==="self"){
   const pension=(onWelfare||age>=60||age<20)?0:17920*12;
   const health=nHealthInput!==null?nHealthInput:(medEst?medEst.total:0);
@@ -766,31 +767,22 @@ function calc(){
  const contribTotal = premUse.contrib;
  const supportPersonal = (employment === "company" ? supportTotal / (includeEmployer?2:1) : supportTotal);
  const supportEmployer = (employment === "company"&&includeEmployer ? supportTotal / 2 : 0);
- const purePersonal = Math.max(0, insurance - supportPersonal);
- const includedEmployer=includeEmployer?employerBurden:0;
- const pureEmployer = Math.max(0, includedEmployer - supportEmployer - contribTotal);
-
  const insuranceSubItems=[];
- if(purePersonal>0.5){
-  insuranceSubItems.push({
-   name:"社会保険料（本人負担）",
-   v:purePersonal,
-   color:"#34d399",
-   children:personalDetail.filter(x=>x.v>0.5)
-  });
- }
- if(pureEmployer>0.5){
-  insuranceSubItems.push({
-   name:"社会保険料（雇用主負担）",
-   v:pureEmployer,
-   color:"#10b981",
-   children:employerDetail.filter(x=>x.v>0.5)
-  });
- }
+ const insuranceTypes=new Map();
+ const addInsuranceSide=(entry,label,color)=>{
+  const type=entry.name.replace(/（本人）|（会社）/g,"");
+  if(!insuranceTypes.has(type))insuranceTypes.set(type,{name:type,v:0,color:entry.color,children:[]});
+  const item=insuranceTypes.get(type);
+  item.v+=entry.v;
+  item.children.push({name:label,v:entry.v,color});
+ };
+ personalDetail.filter(x=>x.v>0.5).forEach(x=>addInsuranceSide(x,"本人負担","#34d399"));
+ if(includeEmployer)employerDetail.filter(x=>x.v>0.5).forEach(x=>addInsuranceSide(x,"雇用主負担","#10b981"));
+ insuranceTypes.forEach(item=>insuranceSubItems.push(item));
  if(supportTotal>0.5){
   const sChildren=[];
-  if(supportPersonal>0.5)sChildren.push({name:"うち本人負担",v:supportPersonal,color:"#bef264"});
-  if(supportEmployer>0.5)sChildren.push({name:"うち会社負担",v:supportEmployer,color:"#a3e635"});
+  if(supportPersonal>0.5)sChildren.push({name:"本人負担",v:supportPersonal,color:"#bef264"});
+  if(supportEmployer>0.5)sChildren.push({name:"雇用主負担",v:supportEmployer,color:"#a3e635"});
   insuranceSubItems.push({
    name:"子ども・子育て支援金",
    v:supportTotal,
@@ -803,7 +795,7 @@ function calc(){
    name:"子ども・子育て拠出金（雇用主負担）",
    v:contribTotal,
    color:"#84cc16",
-   children:[]
+   children:[{name:"雇用主負担",v:contribTotal,color:"#84cc16"}]
   });
  }
  const incomeTaxCore=incomeTax/1.021;
