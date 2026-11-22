@@ -172,7 +172,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <tbody id="rows"></tbody>
 <tfoot id="foot"></tfoot>
 </table>
-<p class="small">費目額・内訳は令和8年度一般会計予算の主要経費別内訳に基づきます。国税は一般会計予算の構成比で比例配分し、地方税・復興特別所得税・社会保険料（雇用主負担分を含む）は一般会計とは別枠で、それぞれの使い道に配分した<b>イメージ値</b>です。たばこ税・ガソリン税は国税として扱っています（構成比は個人が払った総額に対する割合）。収支は収入を含まず、税・保険料の負担と給付（年金を含む）のみの差し引きです。</p>
+<p class="small">費目額・内訳は令和8年度一般会計予算の主要経費別内訳と、社会保険料の実績見込みに基づきます。<b>使途（年金・医療・介護等）ごとにまとめ</b>、各費目の内訳として財源（社会保険料・一般財源・地方税等）の内訳を表示しています。一般財源は国税（一般会計予算の構成比で比例配分）、地方税・復興特別所得税・社会保険料（雇用主負担分を含む）・ふるさと納税は別枠で使い道に配分した<b>イメージ値</b>です。構成比は個人が払った総額に対する割合。収支は収入を含まず、税・保険料の負担と給付（年金を含む）のみの差し引きです。</p>
 </div>
 
 <div class="card">
@@ -326,10 +326,10 @@ function renderChart(labels,data,colors,title,hint,onClick){
     if(elements.length&&onClick){
      const idx=elements[0].index;
      if(view.type==="overview"){
-      pointer=idx<budget.length||!!(extraItems[idx-budget.length]&&extraItems[idx-budget.length].children&&extraItems[idx-budget.length].children.length);
+      pointer=!!(extraItems[idx]&&extraItems[idx].children&&extraItems[idx].children.length);
      }else if(view.type==="category"){
-      const b=budget[view.category];
-      pointer=!!(b&&b.children&&b.children[idx]&&b.children[idx].children);
+      const ex=extraItems[view.category];
+      pointer=!!(ex&&ex.children&&ex.children[idx]);
      }
     }
     e.native.target.style.cursor=pointer?"pointer":"default";
@@ -415,34 +415,18 @@ function showBurdenCategory(item){
 }
 function showOverview(){
  view={type:"overview",category:-1,child:-1};el("backBtn").style.display="none";
- renderChart(budget.map(b=>b.name).concat(extraItems.map(x=>x.name)),userTotals.concat(extraItems.map(x=>x.v)),
-  budget.map(b=>b.color).concat(extraItems.map(x=>x.color)),"あなたが払った総額の使われ方",
-  "国税は一般会計の費目、地方税は地方自治体、復興特別所得税は復興財源、社会保険料は各保険の給付に使われるものとして表示。一般会計や社会保険料の区切りはクリックで内訳に進めます。",
+ renderChart(extraItems.map(x=>x.name),extraItems.map(x=>x.v),
+  extraItems.map(x=>x.color),"あなたが払った総額の使われ方",
+  "使途（年金・医療・介護・防衛etc.）別に表示。各区切りをクリックすると財源の内訳に進めます。",
   i=>{
-   if(i<budget.length)showCategory(i);
-   else{
-    const ex=extraItems[i-budget.length];
-    if(ex&&ex.children&&ex.children.length)showExtraCategory(ex);
-   }
+   const ex=extraItems[i];
+   if(ex&&ex.children&&ex.children.length)showExtraCategory(ex,i);
   });
 }
-function showCategory(i){
- view={type:"category",category:i,child:-1};const b=budget[i];normalizeChildren(b.children,b.total);
- const u=userTotals[i];el("backBtn").style.display="inline-block";
- renderChart(b.children.map(c=>c.name),b.children.map(c=>u*(c.amount/b.total)),b.children.map(c=>c.color),
- `${b.name} の内訳`,"さらに細かい区分がある区切りはクリックで掘り下げられます。",j=>showChild(i,j));
-}
-function showChild(i,j){
- view={type:"child",category:i,child:j};const b=budget[i],c=normalizeChildren(b.children,b.total)[j];
- if(!c.children)return;normalizeChildren(c.children,c.amount);
- const u=userTotals[i]*(c.amount/b.total);el("backBtn").style.display="inline-block";
- renderChart(c.children.map(g=>g.name),c.children.map(g=>u*(g.amount/c.amount)),c.children.map(g=>g.color),
- `${c.name} の内訳`,"← 費目別に戻る、または上の費目名を押して戻れます。",()=>{});
-}
-function showExtraCategory(ex){
- view={type:"extra",category:ex.name,child:-1};el("backBtn").style.display="inline-block";
+function showExtraCategory(ex,catIdx){
+ view={type:"category",category:catIdx,child:-1};el("backBtn").style.display="inline-block";
  renderChart(ex.children.map(c=>c.name),ex.children.map(c=>c.v),ex.children.map(c=>c.color),
- `${ex.shortName||ex.name} の内訳`,"← 費目別に戻る、または上のボタンを押して戻れます。",()=>{});
+ `${ex.name} の内訳`,"← 費目別に戻る、または上のボタンを押して戻れます。",()=>{});
 }
 function calc(){
  const age=+el("age").value||0,income=Math.max(0,+el("income").value||0);
@@ -805,47 +789,126 @@ function calc(){
  const localTax=residentTax+consumptionTax*.22+autoTax; // 住民税＋地方消費税（消費税の22%）＋自動車税
  const generalTax=Math.max(0,grossBurden-insuranceTotal-reconstructionTax-localTax-furusatoNet);
  userTotals=budget.map(b=>generalTax*b.share);
- const insChildren=[
-  {name:"年金保険料 → 年金給付",v:premUse.pension,color:"#2dd4bf"},
-  {name:"健康保険料 → 医療給付（高齢者医療への拠出金を含む）",v:premUse.health,color:"#14b8a6"},
-  {name:"介護保険料 → 介護給付",v:premUse.care,color:"#0d9488"},
-  {name:"雇用・労災保険料 → 失業給付・労災給付等",v:premUse.employment,color:"#5eead4"},
-  {name:"子ども・子育て支援金 → 児童手当の拡充・育児給付等",v:premUse.support,color:"#a3e635"},
-  {name:"子ども・子育て拠出金（雇用主負担）→ 児童手当等",v:premUse.contrib,color:"#84cc16"}
- ].filter(x=>x.v>0.5);
- extraItems=[
-  {name:"【地方税】住民税・地方消費税・自動車税 → 地方自治体の歳出",v:localTax,color:"#f59e0b"},
-  {name:"【復興特別所得税】→ 東日本大震災の復興財源",v:reconstructionTax,color:"#fb7185"},
-  {name:"【ふるさと納税】寄附先自治体の事業（返礼品相当を除く）",v:furusatoNet,color:"#f9a8d4"}
- ].filter(x=>x.v>0.5);
- if(insuranceTotal>0.5){
-  extraItems.push({
-   id:"cat-insurance",
-   name:"【社会保険料】公的保険の各給付（年金・医療・介護等）",
-   shortName:"社会保険料",
-   v:insuranceTotal,
-   color:"#14b8a6",
-   children:insChildren
-  });
+ // 使途ベースの統合費目リストを構築
+ // 社会保険料の各使途（年金・医療・介護・雇用等）と一般財源の対応する費目をまとめる
+ // budget インデックス対応: 0=社会保障, 1=国債費, 2=地方交付税, 3=公共事業, 4=文教, 5=防衛, 6=その他
+ const genSocial=userTotals[0]; // 一般財源の「社会保障」費目全体
+ // 社会保障の一般財源を子費目ごとに按分（budget[0].children の amount 比率で）
+ const socialChildren=budget[0].children;
+ const socialTotal=budget[0].total;
+ const genPension=genSocial*(socialChildren[0].amount/socialTotal);  // 年金給付費
+ const genHealth=genSocial*(socialChildren[1].amount/socialTotal);   // 医療給付費
+ const genCare=genSocial*(socialChildren[2].amount/socialTotal);     // 介護給付費
+ const genWelfare=genSocial*(socialChildren[3].amount/socialTotal);  // 生活扶助等社会福祉費
+ const genChildren=genSocial*(socialChildren[4].amount/socialTotal); // 少子化対策費
+ const genHealth2=genSocial*(socialChildren[5].amount/socialTotal);  // 保健衛生対策費
+ const genEmploy=genSocial*(socialChildren[6].amount/socialTotal);   // 雇用労災対策費
+
+ // 使途別統合費目（社会保険料＋一般財源をまとめる）
+ const purposeItems=[];
+ // ① 年金
+ {
+  const ins=premUse.pension,gen=genPension,total=ins+gen;
+  if(total>0.5){
+   const children=[];
+   if(ins>0.5)children.push({name:"社会保険料（年金保険料）",v:ins,color:"#2dd4bf"});
+   if(gen>0.5)children.push({name:"一般財源（国庫負担等）",v:gen,color:"#7dd3fc"});
+   purposeItems.push({name:"年金",v:total,color:"#38bdf8",children});
+  }
  }
+ // ② 医療
+ {
+  const ins=premUse.health,gen=genHealth,total=ins+gen;
+  if(total>0.5){
+   const children=[];
+   if(ins>0.5)children.push({name:"社会保険料（健康保険料）",v:ins,color:"#14b8a6"});
+   if(gen>0.5)children.push({name:"一般財源（医療給付費）",v:gen,color:"#7dd3fc"});
+   purposeItems.push({name:"医療",v:total,color:"#0ea5e9",children});
+  }
+ }
+ // ③ 介護
+ {
+  const ins=premUse.care,gen=genCare,total=ins+gen;
+  if(total>0.5){
+   const children=[];
+   if(ins>0.5)children.push({name:"社会保険料（介護保険料）",v:ins,color:"#0d9488"});
+   if(gen>0.5)children.push({name:"一般財源（介護給付費）",v:gen,color:"#7dd3fc"});
+   purposeItems.push({name:"介護",v:total,color:"#22d3ee",children});
+  }
+ }
+ // ④ 雇用・労災
+ {
+  const ins=premUse.employment,gen=genEmploy,total=ins+gen;
+  if(total>0.5){
+   const children=[];
+   if(ins>0.5)children.push({name:"社会保険料（雇用・労災保険料）",v:ins,color:"#5eead4"});
+   if(gen>0.5)children.push({name:"一般財源（雇用労災対策費）",v:gen,color:"#7dd3fc"});
+   purposeItems.push({name:"雇用・労災",v:total,color:"#5eead4",children});
+  }
+ }
+ // ⑤ 子ども・子育て
+ {
+  const ins=premUse.support+premUse.contrib,gen=genChildren,total=ins+gen;
+  if(total>0.5){
+   const children=[];
+   if(premUse.support>0.5)children.push({name:"子ども・子育て支援金",v:premUse.support,color:"#a3e635"});
+   if(premUse.contrib>0.5)children.push({name:"子ども・子育て拠出金（雇用主負担）",v:premUse.contrib,color:"#84cc16"});
+   if(gen>0.5)children.push({name:"一般財源（少子化対策費）",v:gen,color:"#7dd3fc"});
+   purposeItems.push({name:"子ども・子育て",v:total,color:"#a3e635",children});
+  }
+ }
+ // ⑥ 社会福祉（生活扶助等）
+ if(genWelfare>0.5)purposeItems.push({name:"社会福祉（生活扶助等）",v:genWelfare,color:"#67e8f9",children:[
+  {name:"一般財源（生活扶助等社会福祉費）",v:genWelfare,color:"#7dd3fc"}
+ ]});
+ // ⑦ 保健衛生
+ if(genHealth2>0.5)purposeItems.push({name:"保健衛生",v:genHealth2,color:"#bae6fd",children:[
+  {name:"一般財源（保健衛生対策費）",v:genHealth2,color:"#7dd3fc"}
+ ]});
+ // ⑧ 地方交付税等
+ {const u=userTotals[2];if(u>0.5)purposeItems.push({name:"地方交付税等（地方への配分）",v:u,color:"#facc15",children:[
+  {name:"一般財源（地方交付税交付金等）",v:u,color:"#fde047"}
+ ]});}
+ // ⑨ 国債費
+ {const u=userTotals[1];if(u>0.5)purposeItems.push({name:"国債費（元本償還・利払い）",v:u,color:"#f472b6",children:[
+  {name:"一般財源（国債費）",v:u,color:"#fb7185"}
+ ]});}
+ // ⑩ 防衛
+ {const u=userTotals[5];if(u>0.5)purposeItems.push({name:"防衛",v:u,color:"#fb923c",children:[
+  {name:"一般財源（防衛関係費）",v:u,color:"#f97316"}
+ ]});}
+ // ⑪ 公共事業
+ {const u=userTotals[3];if(u>0.5)purposeItems.push({name:"公共事業（防災・インフラ等）",v:u,color:"#34d399",children:[
+  {name:"一般財源（公共事業費）",v:u,color:"#6ee7b7"}
+ ]});}
+ // ⑫ 文教・科学技術
+ {const u=userTotals[4];if(u>0.5)purposeItems.push({name:"文教・科学技術振興",v:u,color:"#a78bfa",children:[
+  {name:"一般財源（文教・科学技術振興費）",v:u,color:"#c4b5fd"}
+ ]});}
+ // ⑬ その他
+ {const u=userTotals[6];if(u>0.5)purposeItems.push({name:"その他の歳出",v:u,color:"#94a3b8",children:[
+  {name:"一般財源（その他の事項経費等）",v:u,color:"#cbd5e1"}
+ ]});}
+ // ⑭ 地方税
+ if(localTax>0.5)purposeItems.push({name:"地方税（住民税・地方消費税・自動車税）",v:localTax,color:"#f59e0b",children:[
+  {name:"地方自治体の歳出",v:localTax,color:"#fcd34d"}
+ ]});
+ // ⑮ 復興特別所得税
+ if(reconstructionTax>0.5)purposeItems.push({name:"復興特別所得税",v:reconstructionTax,color:"#fb7185",children:[
+  {name:"東日本大震災の復興財源",v:reconstructionTax,color:"#fda4af"}
+ ]});
+ // ⑯ ふるさと納税
+ if(furusatoNet>0.5)purposeItems.push({name:"ふるさと納税（返礼品相当を除く）",v:furusatoNet,color:"#f9a8d4",children:[
+  {name:"寄附先自治体の事業",v:furusatoNet,color:"#fbcfe8"}
+ ]});
+
+ // グラフ用 extraItems は使途ベース統合のまま（グラフは purposeItems で描画）
+ extraItems=purposeItems;
+
  const rows=el("rows");rows.innerHTML="";
- budget.forEach((b,i)=>{
-  const u=userTotals[i],rowId="cat-"+i;
-  rows.insertAdjacentHTML("beforeend",`<tr class="cat" data-target="${rowId}"><td><span class="arrow">▶</span>${b.name}</td><td>${pct(u)}</td><td><b>${fmt(u)}</b></td><td>${fmt(u/12)}</td></tr>`);
-  normalizeChildren(b.children,b.total);
-  b.children.forEach((c,j)=>{
-   const childId=`${rowId}-${j}`,amount=u*(c.amount/b.total);
-   rows.insertAdjacentHTML("beforeend",`<tr class="child hidden ${c.children?"cat":""}" data-parent="${rowId}" ${c.children?`data-target="${childId}"`:""}><td>${c.children?`<span class="arrow">▶</span>`:""}${c.name}${c.note?`<div class="small">${c.note}</div>`:""}</td><td>${pct(amount)}</td><td>${fmt(amount)}</td><td>${fmt(amount/12)}</td></tr>`);
-   if(c.children){
-    normalizeChildren(c.children,c.amount);
-    c.children.forEach(g=>{const gAmount=u*(g.amount/b.total);
-     rows.insertAdjacentHTML("beforeend",`<tr class="grand hidden" data-parent="${childId}"><td>${g.name}</td><td>${pct(gAmount)}</td><td>${fmt(gAmount)}</td><td>${fmt(gAmount/12)}</td></tr>`);});
-   }
-  });
- });
- extraItems.forEach((x,idx)=>{
+ purposeItems.forEach((x,idx)=>{
+  const rowId="cat-p-"+idx;
   if(x.children&&x.children.length){
-   const rowId=x.id||("cat-extra-"+idx);
    rows.insertAdjacentHTML("beforeend",`<tr class="cat" data-target="${rowId}"><td><span class="arrow">▶</span>${x.name}</td><td>${pct(x.v)}</td><td><b>${fmt(x.v)}</b></td><td>${fmt(x.v/12)}</td></tr>`);
    x.children.forEach(c=>{
     rows.insertAdjacentHTML("beforeend",`<tr class="child hidden" data-parent="${rowId}"><td>${c.name}</td><td>${pct(c.v)}</td><td>${fmt(c.v)}</td><td>${fmt(c.v/12)}</td></tr>`);
