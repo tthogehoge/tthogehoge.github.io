@@ -102,6 +102,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <div><label>自動車の排気量（cc・なしは0）</label><input id="engineCc" type="number" min="0" step="50" value="0"></div>
 <div><label>自動車重量税（年額・不明なら0）</label><input id="weightTax" type="number" min="0" step="100" value="0"></div>
 <div><label>年間のたばこ購入額（任意）</label><input id="tobaccoSpend" type="number" min="0" step="1000" value="0"></div>
+<div><label>NHK受信料</label><select id="nhk"><option value="none">なし・免除</option><option value="chijo">地上契約（月1,100円・年13,200円）</option><option value="eisei" selected>衛星契約（月1,950円・年23,400円）</option></select></div>
 </div>
 <button id="calc">税金・社会保険料・給付を試算する</button>
 <p class="small">※消費税は食費等を8％、その他を10％で概算します。ガソリン税は揮発油税・地方揮発油税28.7円/Lと石油石炭税2.8円/Lの合計31.5円/L（ガソリンの暫定税率は令和7年12月31日に廃止）、自動車税は排気量別の年額目安、たばこは購入額の約63.5％を税・特別税等として概算します。実際は燃料種別・車種・自治体・商品により異なります。</p>
@@ -118,6 +119,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <div class="kpi"><span>ガソリン税</span><b id="kGas">-</b></div>
 <div class="kpi"><span>自動車税・重量税</span><b id="kCar">-</b></div>
 <div class="kpi"><span>たばこ関係税</span><b id="kTobacco">-</b></div>
+<div class="kpi"><span>NHK受信料</span><b id="kNhk">-</b></div>
 <div class="kpi"><span>負担合計（本人負担）</span><b id="kBurden">-</b></div>
 <div class="kpi"><span>負担合計（雇用主負担込み）</span><b id="kGross">-</b></div>
 <div class="kpi"><span>雇用主込みの保険料総額</span><b id="kInsuranceTotal">-</b></div>
@@ -143,7 +145,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <tbody id="burdenRows"></tbody>
 <tfoot id="burdenFoot"></tfoot>
 </table>
-<p class="small">所得税・住民税・社会保険料・消費税・ガソリン税・自動車税・たばこ税の内訳です。社会保険料は行をクリックすると本人負担・雇用主負担・子ども・子育て支援金・拠出金の内訳を展開できます。0円の項目は表示しません。</p>
+<p class="small">所得税・住民税・社会保険料・消費税・ガソリン税・自動車税・たばこ税・NHK受信料の内訳です。社会保険料は行をクリックすると本人負担・雇用主負担・子ども・子育て支援金・拠出金の内訳を展開できます。0円の項目は表示しません。</p>
 </div>
 
 <div class="card">
@@ -164,7 +166,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <button class="back" id="backBtn">← 費目別に戻る</button>
 </div>
 <div class="chartbox"><canvas id="chart"></canvas></div>
-<div class="total-line"><span>内訳合計（税・保険料／雇用主負担込み）</span><b id="chartTotal">-</b></div>
+<div class="total-line"><span>内訳合計（税・保険料・NHK受信料／雇用主負担込み）</span><b id="chartTotal">-</b></div>
 <p class="small" id="chartHint">円グラフの区切りをクリックすると、その費目の内訳に進めます。</p>
 <h2>費目別の内訳 <span class="badge">行をクリックで開閉</span></h2>
 <table>
@@ -172,7 +174,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <tbody id="rows"></tbody>
 <tfoot id="foot"></tfoot>
 </table>
-<p class="small">費目額・内訳は令和8年度一般会計予算の主要経費別内訳と、社会保険料の実績見込みに基づきます。<b>使途（年金・医療・介護等）ごとにまとめ</b>、各費目の内訳として財源（社会保険料・一般財源・地方税等）の内訳を表示しています。一般財源は国税（一般会計予算の構成比で比例配分）、地方税・復興特別所得税・社会保険料（雇用主負担分を含む）・ふるさと納税は別枠で使い道に配分した<b>イメージ値</b>です。構成比は個人が払った総額に対する割合。収支は収入を含まず、税・保険料の負担と給付（年金を含む）のみの差し引きです。</p>
+<p class="small">費目額・内訳は令和8年度一般会計予算の主要経費別内訳と、社会保険料の実績見込みに基づきます。<b>使途（年金・医療・介護等）ごとにまとめ</b>、各費目の内訳として財源（社会保険料・一般財源・地方税等）の内訳を表示しています。一般財源は国税（一般会計予算の構成比で比例配分）、地方税・復興特別所得税・社会保険料（雇用主負担分を含む）・ふるさと納税は別枠で使い道に配分した<b>イメージ値</b>です。NHK受信料は公費への配分と区別して独立した費目として表示します。構成比は個人が払った総額に対する割合。収支は収入を含まず、税・保険料の負担と給付（年金を含む）のみの差し引きです。</p>
 </div>
 
 <div class="card">
@@ -202,6 +204,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <li><b>介護保険料（65歳以上・第1号）</b>：第9期の全国平均基準額（月6,225円）×所得段階の乗率（0.285〜2.4）。年金の天引きで、単身世帯を想定します。</li>
 <li><b>消費税</b>：食費等×8%＋その他×10%。そのうち22%（2.2/10）を地方消費税として扱います。</li>
 <li><b>ガソリン税・自動車関係・たばこ</b>：ガソリンは31.5円/L（ガソリン税28.7円＋石油石炭税2.8円）、自動車税は排気量別の年額、重量税は入力値、たばこは購入額×63.5%で概算します。</li>
+<li><b>NHK受信料</b>：地上契約は月1,100円、衛星契約は月1,950円の月額を12か月分で計上します。免除・契約なしは0円です。支払方法や地域による差額は反映していません。</li>
 <li><b>児童手当</b>：3歳未満は月1.5万円、3歳〜高校生年代は月1万円、第3子以降は月3万円。</li>
 <li><b>生活扶助（生活保護）</b>：最低生活費（第1類＋第2類＋特例加算2,500円/人）から、収入・年金・児童手当を引いた不足分。資産100万円未満・18歳以上のときだけ計算します。住宅扶助・医療扶助などは含みません。</li>
 <li><b>使い道への配分</b>：国税は一般会計予算の構成比で配分します。地方税は地方自治体、復興特別所得税は復興財源、社会保険料は年金・医療・介護・雇用・児童手当等の各給付に使われるものとして別枠にしています。</li>
@@ -229,6 +232,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <tr><td>ガソリン税</td><td>ガソリン税28.7円/L＋石油石炭税2.8円/L（暫定税率25.1円は令和7年12月31日に廃止）</td><td><a href="https://www.enecho.meti.go.jp/about/special/johoteikyo/zanteizeiritsu.html" target="_blank" rel="noopener">資源エネルギー庁 ガソリン暫定税率の廃止</a><br><a href="https://selectra.jp/energy/gasoline/tax" target="_blank" rel="noopener">税額の内訳（参考：民間サイト）</a></td></tr>
 <tr><td>ふるさと納税</td><td>控除額＝（寄附額 − 2,000円）に対し、所得税は所得控除、住民税は基本分10%＋特例分（所得割額の20%まで）。返礼割合は3割以下</td><td><a href="https://www.soumu.go.jp/main_sosiki/jichi_zeisei/czaisei/czaisei_seido/furusato/mechanism/deduction.html" target="_blank" rel="noopener">総務省 ふるさと納税のしくみ（控除額の計算）</a><br><a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1155.htm" target="_blank" rel="noopener">国税庁 No.1155 ふるさと納税</a><br><a href="https://www.city.takayama.lg.jp/_res/projects/default_project/_page_/001/010/858/010208_gi47gou-siryou.pdf" target="_blank" rel="noopener">返礼割合3割以下の基準（自治体の資料・PDF）</a></td></tr>
 <tr><td>住民税</td><td>令和9年度分：所得割10%（標準税率）、均等割5,000円＋森林環境税1,000円、基礎控除43万円、給与所得控除の最低額74万円、扶養・配偶者の所得要件62万円、非課税限度額45万円（単身）、調整控除の基礎控除の差5万円</td><td><a href="https://www.city.edogawa.tokyo.jp/e013/kurashi/zeikin/juminzei/r9kaisei.html" target="_blank" rel="noopener">江戸川区 令和9年度分住民税から適用されるもの</a><br><a href="https://www.cao.go.jp/zei-cho/content/8life4kai2.pdf" target="_blank" rel="noopener">総務省 個人住民税の資料（PDF）</a><br><a href="https://www.nishi.or.jp/kurashi/shizei/kojinshiminzei/kisotishiki/juminshotoku-sa.html" target="_blank" rel="noopener">住民税と所得税の人的控除額の差</a></td></tr>
+<tr><td>NHK受信料</td><td>地上契約 月1,100円、衛星契約 月1,950円（通常地域の月額）</td><td><a href="https://www.nhk-cs.jp/jushinryo/251001/compliant_2.html" target="_blank" rel="noopener">NHK受信料の窓口・受信規約</a></td></tr>
 <tr><td>消費税、自動車税、たばこ税</td><td>8%・10%（うち地方消費税は22%）／排気量別の年額／購入額の63.5%</td><td>原典リンクなし（概算値）</td></tr>
 </tbody>
 </table>
@@ -662,8 +666,10 @@ function calc(){
  }
  const carTax=autoTax+weightTax;
  const tobaccoTax=tobaccoSpend*.635;
+ const nhkMode=el("nhk").value;
+ const nhkFee=nhkMode==="chijo"?13200:nhkMode==="eisei"?23400:0;
  const indirectTax=consumptionTax+gasolineTax+carTax+tobaccoTax;
- const totalBurden=burden+indirectTax+furusatoNet;
+ const totalBurden=burden+indirectTax+furusatoNet+nhkFee;
 
  const benefits=pensionIncome+childBenefit+welfareAmount;
  const grossBurden=totalBurden+employerBurden; // 本人負担＋雇用主負担
@@ -720,8 +726,11 @@ function calc(){
   {n:"ガソリン税",v:gasolineTax,c:"#fb923c"},
   {n:"自動車税・重量税",v:carTax,c:"#f472b6"},
   {n:"たばこ関係税",v:tobaccoTax,c:"#94a3b8"},
-  {n:"ふるさと納税（返礼品相当を除く）",v:furusatoNet,c:"#f9a8d4"}
+  {n:"ふるさと納税（返礼品相当を除く）",v:furusatoNet,c:"#f9a8d4"},
+  {n:"NHK受信料",v:nhkFee,c:"#c084fc"}
  ].filter(x=>x.v>0.5);
+ burdenTopItems.sort((a,b)=>b.v-a.v);
+ burdenTopItems.forEach(item=>item.children?.sort((a,b)=>b.v-a.v));
  showBurdenOverview();
 
  const bRows=el("burdenRows");bRows.innerHTML="";
@@ -759,6 +768,7 @@ function calc(){
  el("kGas").textContent=fmt(gasolineTax);
  el("kCar").textContent=fmt(carTax);
  el("kTobacco").textContent=fmt(tobaccoTax);
+ el("kNhk").textContent=fmt(nhkFee);
  el("kBurden").textContent=fmt(totalBurden);
  el("kInsuranceTotal").textContent=fmt(insuranceTotal);
  el("kBenefit").textContent=fmt(benefits);
@@ -777,6 +787,7 @@ function calc(){
  if(gasolineTax)detail.push(`ガソリン税等：年 ${fmt(gasolineTax)}（${gasLiters}L）`);
  if(carTax)detail.push(`自動車税・重量税：年 ${fmt(carTax)}`);
  if(tobaccoTax)detail.push(`たばこ関係税：年 ${fmt(tobaccoTax)}（概算）`);
+ if(nhkFee)detail.push(`NHK受信料：年 ${fmt(nhkFee)}（${nhkMode==="chijo"?"地上契約":"衛星契約"}の月額×12。実際の支払額は支払方法・地域などで異なる場合があります）`);
  if(pensionIncome)detail.push(`年金：年 ${fmt(pensionIncome)}（給付として計上。所得税・住民税の計算には公的年金等控除を反映）`);
  if(childBenefit)detail.push(`児童手当：年 ${fmt(childBenefit)}（子ども ${children.length}人）`);
  if(welfareEligible)detail.push(`生活保護・生活扶助の概算：年 ${fmt(welfareAmount)}（住宅扶助・医療扶助等は別途）`);
@@ -787,7 +798,7 @@ function calc(){
 
  const reconstructionTax=incomeTax-incomeTax/1.021;
  const localTax=residentTax+consumptionTax*.22+autoTax; // 住民税＋地方消費税（消費税の22%）＋自動車税
- const generalTax=Math.max(0,grossBurden-insuranceTotal-reconstructionTax-localTax-furusatoNet);
+ const generalTax=Math.max(0,grossBurden-insuranceTotal-reconstructionTax-localTax-furusatoNet-nhkFee);
  userTotals=budget.map(b=>generalTax*b.share);
  // 使途ベースの統合費目リストを構築
  // 社会保険料の各使途（年金・医療・介護・雇用等）と一般財源の対応する費目をまとめる
@@ -877,6 +888,9 @@ function calc(){
    purposeItems.push({name:"地方自治体の歳出",v:localTotal,color:"#f59e0b",children});
   }
  } // ⑨ 国債費
+ if(nhkFee>0.5)purposeItems.push({name:"NHK受信料",v:nhkFee,color:"#c084fc",children:[
+  {name:`NHK受信料（${nhkMode==="chijo"?"地上契約":"衛星契約"}）`,v:nhkFee,color:"#c084fc"}
+ ]});
  {const u=userTotals[1];if(u>0.5)purposeItems.push({name:"国債費（元本償還・利払い）",v:u,color:"#f472b6",children:[
   {name:"一般財源（国債費）",v:u,color:"#fb7185"}
  ]});}
@@ -898,6 +912,8 @@ function calc(){
  ]});}
  // ⑮ 復興特別所得税
 
+ purposeItems.sort((a,b)=>b.v-a.v);
+ purposeItems.forEach(item=>item.children?.sort((a,b)=>b.v-a.v));
  // グラフ用 extraItems は使途ベース統合のまま（グラフは purposeItems で描画）
  extraItems=purposeItems;
 
