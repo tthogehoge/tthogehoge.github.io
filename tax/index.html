@@ -44,6 +44,9 @@ button{margin-top:14px;width:100%;padding:12px;border:0;border-radius:10px;backg
 .kpi b{display:block;font-size:19px}.kpi span{font-size:11px;color:var(--muted)}
 .kpi.good b{color:var(--good)}.kpi.warn b{color:var(--warn)}
 .chartbox{position:relative;height:400px}
+.med-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.med-item h3{margin:0 0 8px;font-size:15px}
+.chartbox.med{height:300px}
 .chart-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
 .chart-title{font-weight:700;font-size:16px}
 .back{display:none;padding:7px 12px;border-radius:8px;background:#1e293b;color:#e5e7eb;border:1px solid #334155;font-size:13px;cursor:pointer}
@@ -218,6 +221,29 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <p class="small">収入は含めず、税・社会保険料（雇用主負担を含む）の負担と給付（年金を含む）だけの差し引きです。</p>
 </div>
 
+<div class="card">
+<h2>⑤ 医療費の内訳（国民医療費・令和6年度 48兆8,100億円）</h2>
+<p class="small">全国の医療費の合計を、財源・診療の種類・年齢で分けたものです。入力条件には連動しません。</p>
+<div class="med-grid">
+<div class="med-item">
+<h3>どこから出ているか（財源別）</h3>
+<div class="chartbox med"><canvas id="medFundChart"></canvas></div>
+<table><thead><tr><th>財源</th><th>金額</th><th>構成比</th></tr></thead><tbody id="medFundRows"></tbody><tfoot id="medFundFoot"></tfoot></table>
+</div>
+<div class="med-item">
+<h3>何に使われたか（診療種別）</h3>
+<div class="chartbox med"><canvas id="medTypeChart"></canvas></div>
+<table><thead><tr><th>診療の種類</th><th>金額</th><th>構成比</th></tr></thead><tbody id="medTypeRows"></tbody><tfoot id="medTypeFoot"></tfoot></table>
+</div>
+<div class="med-item">
+<h3>誰に使われたか（年齢階級別）</h3>
+<div class="chartbox med"><canvas id="medAgeChart"></canvas></div>
+<table><thead><tr><th>年齢</th><th>金額</th><th>構成比</th></tr></thead><tbody id="medAgeRows"></tbody><tfoot id="medAgeFoot"></tfoot></table>
+</div>
+</div>
+<p class="small">厚生労働省「令和6（2024）年度 国民医療費の概況」（令和8年10月30日公表）の確定値です。保険料は事業主と被保険者の合計、公費は国庫と地方の合計で、年金・介護などは含みません。「その他」は原因者負担（自動車損害賠償責任保険など）で、その他の財源から患者負担を引いた値です。65〜74歳は「65歳以上」から「75歳以上」を引いた値です。人口一人当たりでは、65歳未満が22.2万円、65歳以上が81.0万円、75歳以上が96.8万円です。各項目は億円未満を四捨五入した公表値のため、合計が数億円ずれることがあります。</p>
+</div>
+
 <div class="card src">
 <h2>数字の出どころ・計算方法</h2>
 <p class="small">令和8年度（2026年度）の制度を前提にした概算です。下の「出どころ」で、リンクのあるものは原典を確認できます。リンクのない項目は概算値で、今回は原典を確認していません。</p>
@@ -254,6 +280,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <tr><td>健康保険料・介護保険料</td><td>協会けんぽの料率（概算。都道府県ごとに異なる）</td><td><a href="https://www.kyoukaikenpo.or.jp/g7/cat330/sb3130/r08/260216/" target="_blank" rel="noopener">協会けんぽ 令和8年度の保険料率</a></td></tr>
 <tr><td>厚生年金保険料・子ども・子育て拠出金</td><td>厚生年金18.3%（労使折半）、拠出金0.36%（事業主のみ）</td><td><a href="https://www.nenkin.go.jp/service/kounen/hokenryo/ryogaku/ryogakuhyo/20200825.html" target="_blank" rel="noopener">日本年金機構 厚生年金保険料額表</a></td></tr>
 <tr><td>子ども・子育て支援金</td><td>0.23%（労使折半）。2026年4月分から</td><td><a href="https://www.kyoukaikenpo.or.jp/shibu/gifu/assets/syahogifu202604.pdf" target="_blank" rel="noopener">協会けんぽ 令和8年4月からの保険料額表（PDF）</a><br><a href="https://www.mhlw.go.jp/hourei/doc/tsuchi/T260305S0021.pdf" target="_blank" rel="noopener">子ども・子育て支援金制度のリーフレット（PDF）</a></td></tr>
+<tr><td>医療費の内訳（国民医療費）</td><td>令和6年度：総額48兆8,100億円。財源別（公費37.4%・保険料50.3%・その他12.2%）、診療種類別（医科71.5%・薬局調剤17.6%・歯科7.0%など）、年齢階級別（65歳以上60.1%）</td><td><a href="https://www.mhlw.go.jp/toukei/saikin/hw/k-iryohi/24/index.html" target="_blank" rel="noopener">厚生労働省 令和6年度 国民医療費の概況</a><br><a href="https://www.mhlw.go.jp/toukei/saikin/hw/k-iryohi/24/dl/R06kekka.pdf" target="_blank" rel="noopener">結果の概要（PDF）</a></td></tr>
 <tr><td>国民健康保険料（75歳未満）</td><td>横浜市の令和8年度の料率（医療・支援・介護・子ども分の所得割と均等割、賦課限度額）</td><td><a href="https://www.city.yokohama.lg.jp/kurashi/koseki-zei-hoken/kokuho/hokenryo/r7hokennryouritu.html" target="_blank" rel="noopener">横浜市 令和8年度の国民健康保険料の料率</a><br><a href="https://www.pref.osaka.lg.jp/o100080/kokuho/iryouseido/hokenryouritsu/hokenryouritsu2.html" target="_blank" rel="noopener">比較：大阪府の標準保険料率</a></td></tr>
 <tr><td>後期高齢者医療保険料</td><td>令和8・9年度の全国平均：均等割56,083円、所得割10.17%、子ども分は均等割1,351円・所得割0.25%。軽減は7割・5割・2割</td><td><a href="https://www.mhlw.go.jp/stf/newpage_72371.html" target="_blank" rel="noopener">厚生労働省 後期高齢者医療の令和8・9年度の保険料率</a><br><a href="https://www.mhlw.go.jp/content/12401000/001765879.pdf" target="_blank" rel="noopener">均等割の軽減（PDF）</a></td></tr>
 <tr><td>介護保険料（第1号）</td><td>第9期の全国平均基準額 月6,225円、標準13段階の乗率（0.285〜2.4）</td><td><a href="https://www.mhlw.go.jp/stf/newpage_40211.html" target="_blank" rel="noopener">厚生労働省 第9期の第1号保険料</a><br><a href="https://www.mhlw.go.jp/content/12300000/001750951.pdf" target="_blank" rel="noopener">第1号保険料の在り方（PDF）</a></td></tr>
@@ -995,6 +1022,34 @@ el("backBtn").addEventListener("click",showOverview);
 el("backBurdenBtn").addEventListener("click",showBurdenOverview);
 el("calc").addEventListener("click",calc);
 el("income").addEventListener("keydown",e=>{if(e.key==="Enter")calc()});
+// 医療費の内訳（国民医療費 令和6年度）。入力条件には連動しない固定データ（単位：億円）
+const medCharts={};
+function fmtCho(v){const cho=Math.floor(v/10000),oku=Math.round(v%10000);return cho?`${cho}兆${oku.toLocaleString("ja-JP")}億円`:`${oku.toLocaleString("ja-JP")}億円`;}
+function renderMedDoughnut(key,canvasId,rowsId,footId,items){
+ const sum=items.reduce((a,x)=>a+x.v,0);
+ if(medCharts[key])medCharts[key].destroy();
+ medCharts[key]=new Chart(el(canvasId),{type:"doughnut",
+  data:{labels:items.map(x=>x.n),datasets:[{data:items.map(x=>x.v),backgroundColor:items.map(x=>x.c),borderWidth:0}]},
+  options:{responsive:true,maintainAspectRatio:false,
+   plugins:{legend:{position:"bottom",labels:{color:"#e5e7eb",boxWidth:12,font:{size:11}}},
+    tooltip:{callbacks:{label:c=>`${c.label}: ${fmtCho(c.parsed)}（${(c.parsed/sum*100).toFixed(1)}%）`}}}}});
+ el(rowsId).innerHTML=items.map(x=>`<tr><td>${x.n}</td><td>${fmtCho(x.v)}</td><td>${(x.v/sum*100).toFixed(1)}%</td></tr>`).join("");
+ el(footId).innerHTML=`<tr class="first"><td>合計</td><td>${fmtCho(sum)}</td><td>100.0%</td></tr>`;
+}
+function renderMedical(){
+ renderMedDoughnut("fund","medFundChart","medFundRows","medFundFoot",[
+  {n:"国庫（国の税金）",v:119975,c:"#38bdf8"},{n:"地方（都道府県・市町村の税金）",v:62703,c:"#0ea5e9"},
+  {n:"被保険者の保険料",v:139014,c:"#34d399"},{n:"事業主の保険料",v:106657,c:"#10b981"},
+  {n:"患者負担（窓口負担など）",v:57411,c:"#facc15"},{n:"その他（原因者負担）",v:2341,c:"#94a3b8"}]);
+ renderMedDoughnut("type","medTypeChart","medTypeRows","medTypeFoot",[
+  {n:"医科 入院",v:183602,c:"#a78bfa"},{n:"医科 入院外",v:165339,c:"#c4b5fd"},
+  {n:"薬局調剤",v:85742,c:"#f472b6"},{n:"歯科診療",v:34059,c:"#fb923c"},
+  {n:"入院時食事・生活",v:7718,c:"#facc15"},{n:"訪問看護",v:6785,c:"#34d399"},{n:"療養費等",v:4854,c:"#94a3b8"}]);
+ renderMedDoughnut("age","medAgeChart","medAgeRows","medAgeFoot",[
+  {n:"0〜14歳",v:26521,c:"#7dd3fc"},{n:"15〜44歳",v:59712,c:"#38bdf8"},
+  {n:"45〜64歳",v:108375,c:"#34d399"},{n:"65〜74歳",v:92374,c:"#facc15"},{n:"75歳以上",v:201117,c:"#fb923c"}]);
+}
+renderMedical();
 applyPreset();
 const shareableInputs=[...document.querySelectorAll(".wrap input[id], .wrap select[id]")].filter(input=>input.id!=="shareLink");
 function refreshShareLink(){
