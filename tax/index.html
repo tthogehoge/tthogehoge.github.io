@@ -102,7 +102,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <option value="freelancer">個人事業主・フリーランス</option>
 <option value="pensioner">年金受給者</option>
 <option value="unemployed">無職・失業中</option>
-<option value="student">学生</option>
+<option value="student">学生（収入なし）</option>
 <option value="single_parent">ひとり親世帯</option>
 </select></div>
 <div><label>年齢</label><input id="age" type="number" min="15" max="89" value="35"></div>
@@ -124,6 +124,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <div><label>子どもの年齢（カンマ区切り）</label><input id="childrenAges" type="text" placeholder="例: 2,5,8" value=""></div>
 <div><label>家賃（月額）</label><input id="rent" type="number" min="0" step="1000" value="0"></div>
 <div><label>預貯金・資産（概算）</label><input id="assets" type="number" min="0" step="10000" value="0"></div>
+<div><label>生活保護（生活扶助）の受給状況</label><select id="welfareStatus"><option value="no">受給していない</option><option value="yes">受給中</option></select></div>
 <div><label>国民健康保険料（年額・不明なら空欄）</label><input id="nationalHealth" type="number" min="0" step="1000" placeholder="自動概算" value=""></div>
 <div><label>障害者手帳等</label><select id="disability"><option value="no">なし</option><option value="yes">あり</option></select></div>
 </div>
@@ -368,7 +369,7 @@ const presets={
  freelancer:{age:35,income:5000000,employment:"self",expenseRate:55,areaClass:"1-1",spouse:"none",childrenCount:0,childrenAges:"",rent:100000,assets:1000000,nationalHealth:"",disability:"no",foodSpend:600000,otherSpend:900000,gasLiters:600,engineCc:1500,weightTax:0,tobaccoSpend:0},
  pensioner:{age:70,income:0,pensionIncome:2400000,employment:"none",expenseRate:55,areaClass:"1-1",spouse:"none",childrenCount:0,childrenAges:"",rent:80000,assets:3000000,nationalHealth:"",disability:"no",foodSpend:500000,otherSpend:600000,gasLiters:300,engineCc:1500,weightTax:0,tobaccoSpend:0},
  unemployed:{age:35,income:0,employment:"none",expenseRate:55,areaClass:"1-1",spouse:"none",childrenCount:0,childrenAges:"",rent:80000,assets:300000,nationalHealth:"",disability:"no",foodSpend:300000,otherSpend:300000,gasLiters:0,engineCc:0,weightTax:0,tobaccoSpend:0},
- student:{age:20,income:1000000,employment:"company",expenseRate:55,areaClass:"1-1",spouse:"none",childrenCount:0,childrenAges:"",rent:70000,assets:200000,nationalHealth:"",disability:"no",foodSpend:300000,otherSpend:400000,gasLiters:0,engineCc:0,weightTax:0,tobaccoSpend:0},
+ student:{age:20,income:0,employment:"none",expenseRate:55,areaClass:"1-1",spouse:"none",childrenCount:0,childrenAges:"",rent:70000,assets:200000,nationalHealth:"",disability:"no",foodSpend:300000,otherSpend:400000,gasLiters:0,engineCc:0,weightTax:0,tobaccoSpend:0},
  single_parent:{age:35,income:3000000,employment:"company",expenseRate:55,areaClass:"1-1",spouse:"none",childrenCount:2,childrenAges:"4,8",rent:120000,assets:500000,nationalHealth:"",disability:"no",foodSpend:700000,otherSpend:800000,gasLiters:500,engineCc:1500,weightTax:0,tobaccoSpend:0}
 };
 function applyPreset(){
@@ -376,7 +377,7 @@ function applyPreset(){
  el("age").value=p.age;el("income").value=p.income;el("pensionIncome").value=p.pensionIncome||0;el("employment").value=p.employment;
  el("expenseRate").value=p.expenseRate;el("areaClass").value=p.areaClass;el("spouse").value=p.spouse;el("spouseIncome").value=p.spouseIncome||1000000;
  el("childrenCount").value=p.childrenCount;el("childrenAges").value=p.childrenAges;
- el("rent").value=p.rent;el("assets").value=p.assets;el("nationalHealth").value=p.nationalHealth;el("disability").value=p.disability;
+ el("rent").value=p.rent;el("assets").value=p.assets;el("welfareStatus").value=p.welfareStatus||"no";el("nationalHealth").value=p.nationalHealth;el("disability").value=p.disability;
  el("foodSpend").value=p.foodSpend;el("otherSpend").value=p.otherSpend;el("gasLiters").value=p.gasLiters;
  el("engineCc").value=p.engineCc;el("weightTax").value=p.weightTax;el("tobaccoSpend").value=p.tobaccoSpend;
  calc();
@@ -568,8 +569,9 @@ function calc(){
  lifeAssist=firstSum+addSum+secondVal;
  const annualLifeAssist=lifeAssist*12;
  const welfareEligible=age>=18&&(income+pensionIncome+childBenefit)<annualLifeAssist&&assets<1000000;
- const welfareAmount=welfareEligible?Math.max(0,annualLifeAssist-(income+pensionIncome+childBenefit)):0;
- const onWelfare=welfareEligible; // 生活保護を受ける場合は、国民年金が法定免除、国保・後期高齢者医療の保険料が不要（医療扶助）
+ const welfareEstimateAmount=welfareEligible?Math.max(0,annualLifeAssist-(income+pensionIncome+childBenefit)):0;
+ const onWelfare=el("welfareStatus").value==="yes";
+ const welfareAmount=onWelfare?Math.max(0,annualLifeAssist-(income+pensionIncome+childBenefit)):0;
  // 後期高齢者医療（75歳以上）：令和8・9年度の全国平均の料率（医療分＋子ども分）。単身世帯を想定
  const calcKouki=()=>{
   const judge=Math.max(0,incomeAmount-(pensionIncome>0?150000:0)); // 軽減判定の所得（年金所得から15万円を控除）
@@ -600,7 +602,7 @@ function calc(){
   return{medical,support,care,child,total:medical+support+care+child,cut};
  };
  const kouki=(age>=75&&employment!=="company"&&!onWelfare)?calcKouki():null;
- const kokuho=(age<75&&employment!=="company"&&employment!=="third"&&!onWelfare)?calcKokuho():null;
+ const kokuho=(age>=18&&age<75&&employment!=="company"&&employment!=="third"&&!onWelfare)?calcKokuho():null;
  const medEst=kouki||kokuho; // 保険料を概算する医療保険（入力があれば入力を優先）
  const medLabel=kouki?"後期高齢者医療保険料（全国平均の料率で概算）":"国民健康保険料（横浜市の令和8年度の料率で概算。自治体で大きく異なります）";
  let insurance=0,employerBurden=0,insuranceTotal=0,insuranceDetail=[];
@@ -666,6 +668,8 @@ function calc(){
   }
   if(onWelfare&&nHealthInput===null)insuranceDetail.push("生活保護を受ける場合は、医療保険の保険料は不要で、国民年金保険料は法定免除となります（試算から除外）。");
  }
+
+ if(age<18&&nHealthInput===null&&employment!=="company")insuranceDetail.push("18歳未満は親などの健康保険の扶養に入る想定で、本人分の国民健康保険料を自動計上していません。国民健康保険の世帯負担として反映する場合は、年額を入力してください。");
 
  // 後期高齢者医療の内訳（使い道は医療給付と子ども・子育て支援）
  if(nHealthInput===null&&employment!=="company"&&medEst){
@@ -884,7 +888,7 @@ function calc(){
  el("kGross").textContent=fmt(grossBurden);
  el("kPension").textContent=fmt(pensionIncome);
  el("kNet").textContent=(net>=0?"+":"-")+fmt(Math.abs(net));
- el("kWelfare").textContent=welfareEligible?"可能性あり":"要件を確認";
+ el("kWelfare").textContent=onWelfare?"受給中":welfareEligible?"可能性あり":"要件を確認";
 
  let detail=[];
  if(furusatoMode==="full"){
@@ -899,10 +903,11 @@ function calc(){
  if(nhkFee)detail.push(`NHK受信料：年 ${fmt(nhkFee)}（${nhkMode==="chijo"?"地上契約":"衛星契約"}の月額×12。実際の支払額は支払方法・地域などで異なる場合があります）`);
  if(pensionIncome)detail.push(`年金：年 ${fmt(pensionIncome)}（給付として計上。所得税・住民税の計算には公的年金等控除を反映）`);
  if(childBenefit)detail.push(`児童手当：年 ${fmt(childBenefit)}（子ども ${children.length}人）`);
- if(welfareEligible)detail.push(`生活保護・生活扶助の概算：年 ${fmt(welfareAmount)}（住宅扶助・医療扶助等は別途）`);
- if(employment==="none"&&age>=20&&age<60&&insurance>0)detail.push("国民年金保険料は、失業・収入減少等により全額または一部免除を申請できる場合があります。");
+ if(welfareEligible&&!onWelfare)detail.push(`生活保護の可能性あり。受給中に設定した場合の生活扶助額の概算：年 ${fmt(welfareEstimateAmount)}（住宅扶助・医療扶助等は別途）`);
+ if(onWelfare)detail.push(`生活保護・生活扶助の概算：年 ${fmt(welfareAmount)}（住宅扶助・医療扶助等は別途）`);
+ if(employment==="none"&&age>=20&&age<60&&insurance>0)detail.push("国民年金保険料は、学生納付特例や失業・収入減少等による免除・納付猶予を申請できる場合があります。");
  if(age<18)detail.push("18歳未満は世帯主として生活保護を計算していません（保護者の世帯に属する想定。児童手当は「子どもの人数」に入力した場合に計上されます）。");
- if(welfareEligible)detail.push("生活保護は収入・資産・就労可能性・扶養義務者状況などの個別審査があります。本結果は生活扶助のみの概算です。");
+ if(welfareEligible||onWelfare)detail.push("生活保護は収入・資産・就労可能性・扶養義務者状況などの個別審査があります。本結果は生活扶助のみの概算です。");
  el("benefitDetail").innerHTML=detail.length?detail.join("<br>"):"現在の入力条件では、自動計算できる主な給付は見つかりませんでした。";
 
  const reconstructionTax=incomeTax-incomeTax/1.021;
