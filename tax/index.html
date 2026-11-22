@@ -52,6 +52,7 @@ button{margin-top:14px;width:100%;padding:12px;border:0;border-radius:10px;backg
 .purpose-chart-grid.single-detail .chartbox{height:360px}
 @media(max-width:850px){.purpose-chart-grid.medical-detail,.purpose-chart-grid.single-detail{grid-template-columns:1fr}}
 .chart-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+.toggle-line{margin:-2px 0 10px}.toggle-line label{display:flex;align-items:center;gap:8px;cursor:pointer}.toggle-line input{width:auto;padding:0;accent-color:var(--accent)}
 .chart-title{font-weight:700;font-size:16px}
 .back{display:none;padding:7px 12px;border-radius:8px;background:#1e293b;color:#e5e7eb;border:1px solid #334155;font-size:13px;cursor:pointer}
 .total-line{margin-top:12px;padding:12px;border-radius:10px;background:#0b1220;border:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -160,11 +161,11 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <div class="kpi"><span>たばこ関係税</span><b id="kTobacco">-</b></div>
 <div class="kpi"><span>NHK受信料</span><b id="kNhk">-</b></div>
 <div class="kpi"><span>負担合計（本人負担）</span><b id="kBurden">-</b></div>
-<div class="kpi"><span>負担合計（雇用主負担込み）</span><b id="kGross">-</b></div>
-<div class="kpi"><span>雇用主込みの保険料総額</span><b id="kInsuranceTotal">-</b></div>
+<div class="kpi"><span id="kGrossLabel">負担合計（雇用主負担込み）</span><b id="kGross">-</b></div>
+<div class="kpi"><span id="kInsuranceTotalLabel">保険料合計（雇用主負担込み）</span><b id="kInsuranceTotal">-</b></div>
 <div class="kpi good"><span>年金</span><b id="kPension">-</b></div>
 <div class="kpi good"><span>給付合計（年金・児童手当・生活扶助）</span><b id="kBenefit">-</b></div>
-<div class="kpi good"><span>年間収支（給付－負担・雇用主負担込み／収入は含まず）</span><b id="kNet">-</b></div>
+<div class="kpi good"><span id="kNetLabel">年間収支（給付－負担・雇用主負担込み／収入は含まず）</span><b id="kNet">-</b></div>
 <div class="kpi warn"><span>生活保護の可能性</span><b id="kWelfare">-</b></div>
 </div>
 <p class="small" id="benefitDetail"></p>
@@ -176,15 +177,16 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <button class="back" id="backBurdenBtn">← 負担別に戻る</button>
 </div>
 <div class="chartbox"><canvas id="burdenChart"></canvas></div>
-<div class="total-line"><span>負担合計（雇用主負担込み）</span><b id="burdenChartTotal">-</b></div>
-<p class="small" id="burdenChartHint">社会保険料の区切りをクリックすると、内訳に進めます。</p>
+<div class="toggle-line"><label><input id="includeEmployerBurden" type="checkbox" checked> 雇用主負担を合計に含める（会社員）</label></div>
+<div class="total-line"><span id="burdenChartTotalLabel">負担合計（雇用主負担込み）</span><b id="burdenChartTotal">-</b></div>
+<p class="small" id="burdenChartHint">グラフの区切りをクリックするか、表の行を開くと、税・保険料の内訳を確認できます。</p>
 <h2>負担項目の内訳 <span class="badge">行をクリックで開閉</span></h2>
 <table>
 <thead><tr><th>項目</th><th>構成比</th><th>年額</th><th>月額換算</th></tr></thead>
 <tbody id="burdenRows"></tbody>
 <tfoot id="burdenFoot"></tfoot>
 </table>
-<p class="small">所得税・住民税・社会保険料・消費税・ガソリン税・自動車税・たばこ税・NHK受信料の内訳です。社会保険料は行をクリックすると本人負担・雇用主負担・子ども・子育て支援金・拠出金の内訳を展開できます。0円の項目は表示しません。</p>
+<p class="small">行をクリックすると所得税・住民税・消費税・ガソリン税・自動車関係税・社会保険料などを展開できます。社会保険料は本人負担・雇用主負担から、保険の種類まで確認できます。0円の項目は表示しません。</p>
 </div>
 
 <div class="card">
@@ -204,6 +206,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <h2 id="chartTitle" style="margin:0">③ 費目の内訳（国の予算全体の使われ方）</h2>
 <button class="back" id="backBtn">← 費目別に戻る</button>
 </div>
+<div class="toggle-line"><label><input id="includeEmployerBurdenPurpose" type="checkbox" checked> 雇用主負担を合計に含める（会社員）</label></div>
 <div class="purpose-chart-grid" id="purposeChartGrid">
 <div class="purpose-chart-panel">
 <h3 id="medicalSourceTitle" class="hidden">財源の内訳（社会保険料・一般財源）</h3>
@@ -222,7 +225,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <div class="chartbox"><canvas id="detailUseChart"></canvas></div>
 </div>
 </div>
-<div class="total-line"><span>内訳合計（税・保険料・NHK受信料／雇用主負担込み）</span><b id="chartTotal">-</b></div>
+<div class="total-line"><span id="chartTotalLabel">内訳合計（雇用主負担込み）</span><b id="chartTotal">-</b></div>
 <p class="small" id="chartHint">円グラフの区切りをクリックすると、その費目の内訳に進めます。</p>
 <h2>費目別の内訳 <span class="badge">行をクリックで開閉</span></h2>
 <table>
@@ -230,7 +233,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <tbody id="rows"></tbody>
 <tfoot id="foot"></tfoot>
 </table>
-<p class="small">費目額・内訳は令和8年度一般会計予算の主要経費別内訳と、社会保険料の実績見込みに基づきます。<b>使途（年金・医療・介護等）ごとにまとめ</b>、各費目の内訳として財源（社会保険料・一般財源・地方税等）の内訳を表示しています。一般財源は国税（一般会計予算の構成比で比例配分）、地方税・復興特別所得税・社会保険料（雇用主負担分を含む）・ふるさと納税は別枠で使い道に配分した<b>イメージ値</b>です。NHK受信料は公費への配分と区別して独立した費目として表示します。構成比は個人が払った総額に対する割合。収支は収入を含まず、税・保険料の負担と給付（年金を含む）のみの差し引きです。</p>
+<p class="small" id="purposeAssumption">費目額・内訳は令和8年度一般会計予算の主要経費別内訳と、社会保険料の実績見込みに基づきます。使途ごとにまとめ、財源別の内訳を表示しています。一般財源は国税予算の構成比で比例配分し、地方税・復興特別所得税・社会保険料・ふるさと納税は別枠で使い道に配分したイメージ値です。NHK受信料は公費への配分と区別して表示します。</p>
 </div>
 
 <div class="card">
@@ -239,7 +242,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <thead><tr><th>項目</th><th>内容</th><th>年額</th><th>月額換算</th></tr></thead>
 <tbody id="balanceRows"></tbody>
 </table>
-<p class="small">収入は含めず、税・社会保険料（雇用主負担を含む）の負担と給付（年金を含む）だけの差し引きです。</p>
+<p class="small" id="balanceNote">収入は含めず、税・社会保険料（雇用主負担を含む）の負担と給付（年金を含む）だけの差し引きです。</p>
 </div>
 
 <div class="card src">
@@ -264,7 +267,7 @@ tfoot tr.sub td:first-child{padding-left:28px}
 <li><b>児童手当</b>：3歳未満は月1.5万円、3歳〜高校生年代は月1万円、第3子以降は月3万円。</li>
 <li><b>生活扶助（生活保護）</b>：最低生活費（第1類＋第2類＋特例加算2,500円/人）から、収入・年金・児童手当を引いた不足分。資産100万円未満・18歳以上のときだけ計算します。住宅扶助・医療扶助などは含みません。</li>
 <li><b>使い道への配分</b>：国税は一般会計予算の構成比で配分します。地方税は地方自治体、復興特別所得税は復興財源、社会保険料は年金・医療・介護・雇用・児童手当等の各給付に使われるものとして別枠にしています。医療の診療種類別・年齢階級別のグラフは、国民医療費の全国構成比を試算上の医療費負担額に按分したイメージ値です。</li>
-<li><b>差し引き</b>：給付合計 −（税・社会保険料。雇用主負担を含む）。収入は含みません。</li>
+<li><b>差し引き</b>：給付合計 −（税・社会保険料）。雇用主負担を合計に含めるかは画面のチェックで選べます。収入は含みません。</li>
 </ul>
 
 <h3>出どころ</h3>
@@ -404,6 +407,7 @@ function renderChart(labels,data,colors,title,hint,onClick){
    plugins:{legend:{position:"bottom",labels:{color:"#e5e7eb",boxWidth:14,font:{size:12}}},
     tooltip:{callbacks:{label:c=>[c.label,`構成比: ${(c.parsed/sum*100).toFixed(1)}%`,`年額: ${fmt(c.parsed)}`,`月額: ${fmt(c.parsed/12)}`]}}}}});
  el("chartTitle").textContent="③ 費目の内訳（"+title+"）";el("chartHint").textContent=hint;
+ el("chartTotalLabel").textContent=el("includeEmployerBurden").checked?"表示中の内訳合計（雇用主負担込み）":"表示中の内訳合計（本人負担のみ）";
  el("chartTotal").textContent=`${fmt(sum)}　/　月額 ${fmt(sum/12)}`;
 }
 let benefitChart;
@@ -450,7 +454,7 @@ function showBurdenOverview(){
  burdenView={type:"overview"};
  if(el("backBurdenBtn"))el("backBurdenBtn").style.display="none";
  if(el("burdenChartTitle"))el("burdenChartTitle").textContent="① 負担の内訳（何にいくら払っているか）";
- if(el("burdenChartHint"))el("burdenChartHint").textContent="社会保険料の区切りをクリックすると、本人・会社負担や子ども・子育て支援金等の内訳に進めます。";
+ if(el("burdenChartHint"))el("burdenChartHint").textContent="グラフの区切りをクリックするか、表の行を開くと、税・保険料の内訳を確認できます。";
  renderBurdenChartDoughnut(
   burdenTopItems.map(x=>x.n),
   burdenTopItems.map(x=>x.v),
@@ -484,12 +488,13 @@ function showOverview(){
  view={type:"overview",category:-1,child:-1};el("backBtn").style.display="none";
  setMedicalUsePanels(false);setDetailPanel(false);
  renderChart(extraItems.map(x=>x.name),extraItems.map(x=>x.v),
-  extraItems.map(x=>x.color),"あなたが払った総額の使われ方",
+  extraItems.map(x=>x.color),"あなたの負担額の使われ方",
   "使途（年金・医療・介護・防衛etc.）別に表示。各区切りをクリックすると財源の内訳に進めます。",
   i=>{
    const ex=extraItems[i];
    if(ex&&ex.children&&ex.children.length)showExtraCategory(ex,i);
   });
+ el("chartTitle").textContent=el("includeEmployerBurden").checked?"③ 費目の内訳（雇用主負担込み）":"③ 費目の内訳（本人負担のみ）";
 }
 function showExtraCategory(ex,catIdx){
  view={type:"category",category:catIdx,child:-1};el("backBtn").style.display="inline-block";
@@ -515,6 +520,7 @@ function setMedicalUsePanels(show){
 }
 function calc(){
  const age=+el("age").value||0,income=Math.max(0,+el("income").value||0);
+ const includeEmployer=el("includeEmployerBurden").checked;
  const pensionIncome=Math.max(0,+el("pensionIncome").value||0);
  const employment=el("employment").value,expenseRate=(+el("expenseRate").value||0)/100;
  const area=el("areaClass").value,spouse=el("spouse").value;
@@ -604,8 +610,8 @@ function calc(){
   const support=monthly*.00115,contrib=monthly*.0036; // 子ども・子育て支援金0.23%（労使折半）／拠出金0.36%（雇用主のみ）
   insurance=(health+pension+emp+care+support)*12;
   employerBurden=(health+pension+monthly*.0085+monthly*.0025+support+contrib)*12;
-  insuranceTotal=insurance+employerBurden;
-  premUse={pension:pension*24,health:health*24,care:care*12,employment:(emp+monthly*.0085+monthly*.0025)*12,support:support*24,contrib:contrib*12};
+  insuranceTotal=insurance+(includeEmployer?employerBurden:0);
+  premUse={pension:pension*(includeEmployer?24:12),health:health*(includeEmployer?24:12),care:care*12,employment:(emp+(includeEmployer?monthly*.0085+monthly*.0025:0))*12,support:support*(includeEmployer?24:12),contrib:includeEmployer?contrib*12:0};
   insuranceDetail=[
    `健康保険：本人 ${fmt(health*12)}／会社 ${fmt(health*12)}`,
    `厚生年金：本人 ${fmt(pension*12)}／会社 ${fmt(pension*12)}`,
@@ -753,15 +759,16 @@ function calc(){
  const totalBurden=burden+indirectTax+furusatoNet+nhkFee;
 
  const benefits=pensionIncome+childBenefit+welfareAmount;
- const grossBurden=totalBurden+employerBurden; // 本人負担＋雇用主負担
+ const grossBurden=totalBurden+(includeEmployer?employerBurden:0); // 表示選択に応じた負担合計
  const net=benefits-grossBurden; // 収入は含めず、負担と給付のみ
  const pct=v=>grossBurden>0?(v/grossBurden*100).toFixed(1)+"%":"0.0%";
  const supportTotal = premUse.support;
  const contribTotal = premUse.contrib;
- const supportPersonal = (employment === "company" ? supportTotal / 2 : supportTotal);
- const supportEmployer = (employment === "company" ? supportTotal / 2 : 0);
+ const supportPersonal = (employment === "company" ? supportTotal / (includeEmployer?2:1) : supportTotal);
+ const supportEmployer = (employment === "company"&&includeEmployer ? supportTotal / 2 : 0);
  const purePersonal = Math.max(0, insurance - supportPersonal);
- const pureEmployer = Math.max(0, employerBurden - supportEmployer - contribTotal);
+ const includedEmployer=includeEmployer?employerBurden:0;
+ const pureEmployer = Math.max(0, includedEmployer - supportEmployer - contribTotal);
 
  const insuranceSubItems=[];
  if(purePersonal>0.5){
@@ -799,13 +806,32 @@ function calc(){
    children:[]
   });
  }
+ const incomeTaxCore=incomeTax/1.021;
+ const residentEqual=Math.min(residentTax,kintouwari>0?6000:0);
+ const residentIncome=Math.max(0,residentTax-residentEqual);
  burdenTopItems=[
-  {n:"所得税",v:incomeTax,c:"#38bdf8"},
-  {n:"住民税",v:residentTax,c:"#a78bfa"},
+  {n:"所得税",v:incomeTax,c:"#38bdf8",children:[
+   {name:"所得税（国税）",v:incomeTaxCore,color:"#38bdf8"},
+   {name:"復興特別所得税",v:Math.max(0,incomeTax-incomeTaxCore),color:"#7dd3fc"}
+  ]},
+  {n:"住民税",v:residentTax,c:"#a78bfa",children:[
+   {name:"所得割（都道府県民税）",v:residentIncome*.4,color:"#c4b5fd"},
+   {name:"所得割（市町村民税）",v:residentIncome*.6,color:"#a78bfa"},
+   {name:"均等割・森林環境税",v:residentEqual,color:"#ddd6fe"}
+  ]},
   {n:"社会保険料",v:insuranceTotal,c:"#10b981",children:insuranceSubItems},
-  {n:"消費税",v:consumptionTax,c:"#facc15"},
-  {n:"ガソリン税",v:gasolineTax,c:"#fb923c"},
-  {n:"自動車税・重量税",v:carTax,c:"#f472b6"},
+  {n:"消費税",v:consumptionTax,c:"#facc15",children:[
+   {name:"食料品など（8%で試算）",v:foodSpend*.08,color:"#fde047"},
+   {name:"その他の支出（10%で試算）",v:otherSpend*.10,color:"#facc15"}
+  ]},
+  {n:"ガソリン税",v:gasolineTax,c:"#fb923c",children:[
+   {name:"揮発油税等",v:gasLiters*28.7,color:"#fb923c"},
+   {name:"石油石炭税",v:gasLiters*2.8,color:"#fdba74"}
+  ]},
+  {n:"自動車税・重量税",v:carTax,c:"#f472b6",children:[
+   {name:"自動車税（種別割）",v:autoTax,color:"#f472b6"},
+   {name:"自動車重量税",v:weightTax,color:"#f9a8d4"}
+  ]},
   {n:"たばこ関係税",v:tobaccoTax,c:"#94a3b8"},
   {n:"ふるさと納税（返礼品相当を除く）",v:furusatoNet,c:"#f9a8d4"},
   {n:"NHK受信料",v:nhkFee,c:"#c084fc"}
@@ -839,7 +865,7 @@ function calc(){
   {n:"生活扶助：第1類（個人別の食費・被服費等）",v:firstSum*12*wScale,c:"#34d399"},
   {n:"生活扶助：第2類（世帯共通の光熱費・家具等）",v:secondVal*12*wScale,c:"#10b981"},
   {n:"生活扶助：特例加算",v:addSum*12*wScale,c:"#facc15"}]);
- balance={burden:grossBurden,personal:totalBurden,employer:employerBurden,benefits,net,pension:pensionIncome,child:childBenefit,welfare:welfareAmount};
+ balance={burden:grossBurden,personal:totalBurden,employer:includeEmployer?employerBurden:0,benefits,net,pension:pensionIncome,child:childBenefit,welfare:welfareAmount};
 
  el("kIncomeTax").textContent=fmt(incomeTax);
  el("kResidentTax").textContent=fmt(residentTax);
@@ -852,6 +878,13 @@ function calc(){
  el("kNhk").textContent=fmt(nhkFee);
  el("kBurden").textContent=fmt(totalBurden);
  el("kInsuranceTotal").textContent=fmt(insuranceTotal);
+ el("burdenChartTotalLabel").textContent=includeEmployer?"負担合計（雇用主負担込み）":"負担合計（本人負担のみ）";
+ el("kGrossLabel").textContent=includeEmployer?"負担合計（雇用主負担込み）":"負担合計（本人負担のみ）";
+ el("kInsuranceTotalLabel").textContent=includeEmployer?"保険料合計（雇用主負担込み）":"保険料合計（本人負担のみ）";
+ el("kNetLabel").textContent=includeEmployer?"年間収支（給付－負担・雇用主負担込み／収入は含まず）":"年間収支（給付－本人負担／収入は含まず）";
+ el("includeEmployerBurdenPurpose").checked=includeEmployer;
+ el("balanceNote").textContent=includeEmployer?"収入は含めず、税・社会保険料（雇用主負担を含む）の負担と給付（年金を含む）だけの差し引きです。":"収入は含めず、本人が負担する税・社会保険料と給付（年金を含む）だけの差し引きです。";
+ el("purposeAssumption").textContent=`費目額・内訳は令和8年度一般会計予算の主要経費別内訳と、社会保険料の実績見込みに基づきます。使途ごとにまとめ、財源別の内訳を表示しています。一般財源は国税予算の構成比で比例配分し、地方税・復興特別所得税・社会保険料（雇用主負担分を${includeEmployer?"含む":"含まない"}）・ふるさと納税は別枠で使い道に配分したイメージ値です。NHK受信料は公費への配分と区別して表示します。`;
  el("kBenefit").textContent=fmt(benefits);
  el("kGross").textContent=fmt(grossBurden);
  el("kPension").textContent=fmt(pensionIncome);
@@ -1012,10 +1045,10 @@ function calc(){
  });
  const sgn=n=>(n>=0?"+":"-")+fmt(Math.abs(n));
  const frow=(cls,label,share,amt,fn)=>`<tr class="${cls}"><td>${label}</td><td>${share}</td><td>${fn?fn(amt):fmt(amt)}</td><td>${fn?fn(amt/12):fmt(amt/12)}</td></tr>`;
- el("foot").innerHTML=frow("first","内訳合計（雇用主負担込み）","100.0%",grossBurden);
- el("burdenFoot").innerHTML=frow("first","負担合計（雇用主負担込み）","100.0%",grossBurden)+frow("sub","うち本人負担","—",totalBurden)+frow("sub","うち雇用主負担（社会保険）","—",employerBurden);
+ el("foot").innerHTML=frow("first",includeEmployer?"内訳合計（雇用主負担込み）":"内訳合計（本人負担のみ）","100.0%",grossBurden);
+ el("burdenFoot").innerHTML=frow("first",includeEmployer?"負担合計（雇用主負担込み）":"負担合計（本人負担のみ）","100.0%",grossBurden)+frow("sub","うち本人負担","—",totalBurden)+frow("sub",includeEmployer?"うち雇用主負担（社会保険）":"参考：雇用主負担（合計に含めない）","—",employerBurden);
  const brow=(cls,label,desc,amt,fn)=>`<tr class="${cls}"><td>${label}</td><td>${desc}</td><td>${fn?fn(amt):fmt(amt)}</td><td>${fn?fn(amt/12):fmt(amt/12)}</td></tr>`;
- el("balanceRows").innerHTML=brow("","負担合計","税・社会保険料（本人＋雇用主負担）",grossBurden)
+ el("balanceRows").innerHTML=brow("","負担合計",includeEmployer?"税・社会保険料（本人＋雇用主負担）":"税・社会保険料（本人負担のみ）",grossBurden)
   +brow("","給付合計","年金・児童手当・生活扶助",benefits)
   +brow("total","差し引き（給付 − 負担）",net>=0?"給付が負担を上回る":"負担が給付を上回る",net,sgn);
  el("kNet").parentElement.className="kpi "+(net>=0?"good":"warn");
@@ -1122,22 +1155,35 @@ function renderMedicalUseCharts(total){
  });
 }
 applyPreset();
-const shareableInputs=[...document.querySelectorAll(".wrap input[id], .wrap select[id]")].filter(input=>input.id!=="shareLink");
+const shareableInputs=[...document.querySelectorAll(".wrap input[id], .wrap select[id]")].filter(input=>input.id!=="shareLink"&&input.id!=="includeEmployerBurdenPurpose");
 function refreshShareLink(){
  const url=new URL(window.location.href);
  url.search="";
  url.hash="";
  url.searchParams.set("share","1");
- shareableInputs.forEach(input=>url.searchParams.set(input.id,input.value));
+ shareableInputs.forEach(input=>url.searchParams.set(input.id,input.type==="checkbox"?(input.checked?"1":"0"):input.value));
  el("shareLink").value=url.toString();
 }
 const incomingParams=new URLSearchParams(window.location.search);
 if(incomingParams.get("share")==="1"){
  shareableInputs.forEach(input=>{
-  if(incomingParams.has(input.id))input.value=incomingParams.get(input.id);
+  if(incomingParams.has(input.id)){
+   if(input.type==="checkbox")input.checked=incomingParams.get(input.id)==="1";
+   else input.value=incomingParams.get(input.id);
+  }
  });
+ el("includeEmployerBurdenPurpose").checked=el("includeEmployerBurden").checked;
  calc();
 }
+function syncEmployerBurdenToggles(event){
+ const checked=event.target.checked;
+ el("includeEmployerBurden").checked=checked;
+ el("includeEmployerBurdenPurpose").checked=checked;
+ calc();
+ refreshShareLink();
+}
+el("includeEmployerBurden").addEventListener("change",syncEmployerBurdenToggles);
+el("includeEmployerBurdenPurpose").addEventListener("change",syncEmployerBurdenToggles);
 shareableInputs.forEach(input=>{
  input.addEventListener("input",refreshShareLink);
  input.addEventListener("change",refreshShareLink);
